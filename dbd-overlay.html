@@ -25,6 +25,13 @@
     --textSub: #c0c0c0;
     --highlight: #ff4500;
 
+    /* derived (JS sets) */
+    --hl_10: rgba(255,69,0,.10);
+    --hl_22: rgba(255,69,0,.22);
+    --hl_35: rgba(255,69,0,.35);
+    --hl_45: rgba(255,69,0,.45);
+    --hl_55: rgba(255,69,0,.55);
+
     --numSize: 86px;
     --numWeight: 1000;
     --labelSize: 20px;
@@ -49,10 +56,9 @@
 
     --vignette: .26;
 
-    --chroma: 2px; /* 0px turns it off */
+    --chroma: 2px;
 
     --emberOpacity: .50;
-    --emberSpeed: .60;
 
     --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   }
@@ -80,10 +86,9 @@
     position:absolute; inset:0;
     pointer-events:none;
     z-index:1;
-    mix-blend-mode: screen;
   }
-  #embers{ opacity: var(--emberOpacity); }
-  #sparks{ opacity: .95; }
+  #embers{ opacity: var(--emberOpacity); mix-blend-mode: screen; }
+  #sparks{ opacity: 1; mix-blend-mode: screen; }
 
   /* Blood canvas */
   #blood{
@@ -95,10 +100,16 @@
 
   /* FX layers */
   .fx{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+
   .fx.sheen{
     opacity: var(--sheenOpacity);
-    background: linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--highlight) 22%, white) 20%,
-      transparent 45%, rgba(255,255,255,.10) 55%, transparent 75%, transparent 100%);
+    background: linear-gradient(120deg,
+      transparent 0%,
+      var(--hl_22) 22%,
+      transparent 45%,
+      rgba(255,255,255,.10) 55%,
+      transparent 75%,
+      transparent 100%);
     transform: translateX(-75%) skewX(-18deg);
     animation: sheenMove var(--sheenSpeed) linear infinite;
     mix-blend-mode: screen;
@@ -108,34 +119,52 @@
 
   .fx.scan{
     opacity: var(--scanOpacity);
-    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px,
-      rgba(0,0,0,0) 3px, rgba(0,0,0,0) var(--scanStep));
+    background: repeating-linear-gradient(to bottom,
+      rgba(255,255,255,.05) 0px,
+      rgba(255,255,255,.05) 1px,
+      rgba(0,0,0,0) 3px,
+      rgba(0,0,0,0) var(--scanStep));
     mix-blend-mode: overlay;
     animation: scanShift 6s linear infinite;
   }
   @keyframes scanShift{ 0%{transform:translateY(0)} 100%{transform:translateY(12px)} }
 
+  /* ✅ Grain: avoids blend modes that fail in Streamlabs; uses soft-light fallback */
   .fx.grain{
     opacity: var(--grainOpacity);
     background-image:
-      radial-gradient(circle at 20% 30%, rgba(255,255,255,.12) 0 1px, transparent 2px),
-      radial-gradient(circle at 70% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px),
-      radial-gradient(circle at 40% 80%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+      radial-gradient(circle at 18% 22%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+      radial-gradient(circle at 77% 36%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+      radial-gradient(circle at 42% 78%, rgba(255,255,255,.08) 0 1px, transparent 2px),
+      radial-gradient(circle at 58% 55%, rgba(0,0,0,.25) 0 1px, transparent 2px);
     background-size: var(--grainSize) var(--grainSize);
-    mix-blend-mode: overlay;
+    mix-blend-mode: soft-light;
     animation: grainJitter .55s steps(2,end) infinite;
   }
   @keyframes grainJitter{ 0%{transform:translate(0,0)} 25%{transform:translate(3px,-2px)} 50%{transform:translate(-2px,3px)} 75%{transform:translate(2px,2px)} 100%{transform:translate(-3px,-2px)} }
 
-  .fx.vignette{ opacity:.95; background: radial-gradient(closest-side, transparent 55%, rgba(0,0,0,var(--vignette)) 100%); }
+  .fx.vignette{
+    opacity:.95;
+    background: radial-gradient(closest-side, transparent 55%, rgba(0,0,0,var(--vignette)) 100%);
+  }
 
+  /* ✅ Chroma: simple, reliable, no color-mix */
   .fx.chroma{
-    opacity:.9; mix-blend-mode: screen;
+    opacity:.85;
+    mix-blend-mode: screen;
     filter: blur(.2px);
     animation: chromaFlicker 2.8s steps(2,end) infinite;
   }
+  .fx.chroma::before{
+    content:"";
+    position:absolute; inset:0;
+    background: transparent;
+    filter:
+      drop-shadow(var(--chroma) 0 rgba(255,0,0,.25))
+      drop-shadow(calc(var(--chroma) * -1) 0 rgba(0,200,255,.20));
+  }
   @keyframes chromaFlicker{
-    0%,100%{ transform: translate(0,0); filter: drop-shadow(var(--chroma) 0 rgba(255,0,0,.25)) drop-shadow(calc(var(--chroma) * -1) 0 rgba(0,200,255,.20)); }
+    0%,100%{ transform: translate(0,0); }
     50%{ transform: translate(calc(var(--chroma) * .25), calc(var(--chroma) * -.15)); }
   }
 
@@ -157,9 +186,9 @@
     background: rgba(0,0,0,.65);
     display:grid; place-items:center;
     box-shadow:
-      inset 0 0 0 3px color-mix(in srgb, var(--highlight) calc(var(--glowA) * 100%), transparent),
-      0 0 18px color-mix(in srgb, var(--highlight) calc(var(--glowB) * 100%), transparent),
-      0 0 40px color-mix(in srgb, var(--highlight) calc(var(--glowC) * 100%), transparent);
+      inset 0 0 0 3px rgba(255,69,0, calc(var(--glowA) * 1)),
+      0 0 18px rgba(255,69,0, calc(var(--glowB) * 1)),
+      0 0 40px rgba(255,69,0, calc(var(--glowC) * 1));
     user-select:none; overflow:hidden;
   }
 
@@ -168,23 +197,22 @@
     border-radius:999px;
     pointer-events:none;
     border: var(--spinThick) solid transparent;
-    mask: radial-gradient(transparent 58px, #000 59px);
     opacity: .95;
     animation: spin 1.1s linear infinite;
   }
   @keyframes spin{ to{ transform: rotate(360deg); } }
-  .ring.win{ border-top-color: var(--spinWin); border-right-color: color-mix(in srgb, var(--spinWin) 55%, transparent); }
-  .ring.lose{ border-top-color: var(--spinLose); border-right-color: color-mix(in srgb, var(--spinLose) 55%, transparent); }
+  .ring.win{ border-top-color: var(--spinWin); border-right-color: rgba(255,255,255,.15); }
+  .ring.lose{ border-top-color: var(--spinLose); border-right-color: rgba(255,255,255,.15); }
 
   .pulseGlow{ position:absolute; inset:0; border-radius:999px; pointer-events:none; opacity:0; }
 
   .stack{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap: var(--stackGap); transform: translateY(2px); }
   .icon{ width: var(--icon); height: var(--icon); display:grid; place-items:center; }
-  .icon img{ width: var(--icon); height: var(--icon); object-fit:contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px color-mix(in srgb, var(--highlight) 35%, transparent)); }
+  .icon img{ width: var(--icon); height: var(--icon); object-fit:contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px var(--hl_35)); }
   .iconMask{
     width: var(--icon); height: var(--icon);
     background: var(--highlight);
-    filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px color-mix(in srgb, var(--highlight) 35%, transparent));
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px var(--hl_35));
     -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; -webkit-mask-size:contain;
     mask-repeat:no-repeat; mask-position:center; mask-size:contain;
   }
@@ -218,8 +246,8 @@
   }
   .dash{
     width: 68px; height: 18px; border-radius:999px;
-    background: linear-gradient(90deg, var(--highlight), color-mix(in srgb, var(--highlight) 55%, white));
-    box-shadow: 0 0 24px color-mix(in srgb, var(--highlight) 40%, transparent);
+    background: linear-gradient(90deg, var(--highlight), rgba(255,255,255,.55));
+    box-shadow: 0 0 24px var(--hl_35);
     transform: translateY(6px);
   }
 
@@ -228,7 +256,7 @@
   @keyframes pop{ 0%{transform:scale(1)} 55%{transform:scale(1.09)} 100%{transform:scale(1)} }
   @keyframes punchGlow{
     0%{ filter: drop-shadow(0 0 0 transparent); }
-    55%{ filter: drop-shadow(0 0 18px color-mix(in srgb, var(--highlight) 55%, transparent)); }
+    55%{ filter: drop-shadow(0 0 18px var(--hl_55)); }
     100%{ filter: drop-shadow(0 0 0 transparent); }
   }
   .widget.shake{ animation: shake .22s ease-out; }
@@ -241,14 +269,33 @@
     100%{ transform: scale(var(--scale)) translate(0,0); }
   }
 
-  .version{
-    position:absolute; right:12px; bottom:10px;
-    font-size: 11px; letter-spacing: .9px;
+  /* ✅ Watermark top middle */
+  .watermark{
+    position:absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    color: rgba(255,255,255,.55);
+    text-transform: uppercase;
+    z-index: 4;
+    user-select:none;
+    white-space: nowrap;
+    text-shadow: 0 8px 22px rgba(0,0,0,.45);
+  }
+  .status{
+    position:absolute;
+    right: 12px;
+    bottom: 10px;
+    font-size: 11px;
+    letter-spacing: .9px;
     color: rgba(255,255,255,.45);
     text-transform: uppercase;
     z-index: 4;
     user-select:none;
   }
+
   .off{ display:none !important; }
 </style>
 </head>
@@ -291,7 +338,8 @@
       </div>
     </div>
 
-    <div class="version">LIVE • v6.0</div>
+    <div class="watermark" id="wm">GHOSTEPHACE • DBD SCOREBOARD</div>
+    <div class="status" id="chatStatus">CHAT: …</div>
   </div>
 </div>
 
@@ -299,7 +347,7 @@
 <script>
   const STORAGE_KEY = "dbd_widget_live";
 
-  // ✅ All FX toggles OFF by default per your request
+  // Effects OFF by default
   const DEFAULTS = {
     channel: "ghostephace",
     allowEveryone: false,
@@ -307,12 +355,16 @@
     scoreWin: 0,
     scoreLose: 0,
 
-    visibility: "always",   // always | command
-    showSeconds: 8,
-    hideInitially: true,
+    // We keep visibility always; no command-mode settings in UI now
+    visibility: "always",
 
     layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
-    typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+    typography: {
+      fontChoice: "system",
+      customFont: "",
+      font: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      numSize:86, numWeight:1000, labelSize:20, labelSpacing:1
+    },
 
     colors: {
       bg:"rgba(13,13,14,.78)",
@@ -338,20 +390,20 @@
       chromaPx:2,
 
       shakeOn:false,
-      sparksOn:false, sparksAmount:28,
+      sparksOn:false, sparksAmount:38,
 
-      // 🩸 Blood (OFF by default)
-      bloodOn: false,
-      bloodColor: "#8b0000",
-      bloodOpacity: 0.85,
-      bloodRate: 0.55,
-      bloodSpeed: 1.05,
-      bloodLength: 0.75,
-      bloodThickness: 0.70,
-      bloodWobble: 0.60
+      // Blood OFF by default
+      bloodOn:false,
+      bloodColor:"#8b0000",
+      bloodOpacity:0.85,
+      bloodRate:0.55,
+      bloodSpeed:1.05,
+      bloodLength:0.75,
+      bloodThickness:0.70,
+      bloodWobble:0.60
     },
 
-    // 🔥 Embers (OFF by default)
+    // Embers OFF by default
     ember: { enabled:false, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:.50, speed:.60, targetCount:70 },
 
     textIcons: {
@@ -361,6 +413,10 @@
       leftIconData:"", rightIconData:"",
       leftTintOn:true, rightTintOn:true,
       leftTintColor:"#FF4500", rightTintColor:"#FF4500"
+    },
+
+    watermark: {
+      text: "GHOSTEPHACE • DBD SCOREBOARD"
     }
   };
 
@@ -374,6 +430,8 @@
   const winRingEl = $("winRing"), loseRingEl = $("loseRing");
 
   const fxSheen = $("fxSheen"), fxScan = $("fxScan"), fxGrain = $("fxGrain"), fxVignette = $("fxVignette"), fxChroma = $("fxChroma");
+  const chatStatusEl = $("chatStatus");
+  const wmEl = $("wm");
 
   function deepMerge(base, patch){
     const out = { ...base };
@@ -404,8 +462,6 @@
 
   function hexToRgba(hex, a){
     if(!hex) return `rgba(255,255,255,${a})`;
-    if(hex.startsWith("rgba")) return hex;
-    if(hex.startsWith("rgb(")) return hex.replace("rgb(", "rgba(").replace(")", `, ${a})`);
     const h = hex.replace("#","").trim();
     if(h.length !== 6) return `rgba(255,255,255,${a})`;
     const r = parseInt(h.slice(0,2),16);
@@ -414,8 +470,34 @@
     return `rgba(${r},${g},${b},${a})`;
   }
 
+  function resolveFont(){
+    const choice = (state.typography.fontChoice || "system").toLowerCase();
+    const custom = (state.typography.customFont || "").trim();
+
+    const preset = {
+      system: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      impact: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif",
+      inter: "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      montserrat: "Montserrat, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      orbitron: "Orbitron, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      bebas: "'Bebas Neue', Impact, ui-sans-serif, system-ui",
+      comic: "'Comic Sans MS', 'Comic Sans', ui-sans-serif"
+    };
+
+    if(choice === "custom" && custom) return custom;
+    return preset[choice] || preset.system;
+  }
+
   function setCSSVars(){
     const r = document.documentElement.style;
+
+    // derived highlight rgba for older CEF compatibility (no color-mix)
+    const hl = state.colors.highlight || "#ff4500";
+    r.setProperty("--hl_10", hexToRgba(hl, .10));
+    r.setProperty("--hl_22", hexToRgba(hl, .22));
+    r.setProperty("--hl_35", hexToRgba(hl, .35));
+    r.setProperty("--hl_45", hexToRgba(hl, .45));
+    r.setProperty("--hl_55", hexToRgba(hl, .55));
 
     r.setProperty("--scale", state.layout.scale);
     r.setProperty("--w", state.layout.w + "px");
@@ -428,6 +510,7 @@
     r.setProperty("--icon", state.layout.icon + "px");
     r.setProperty("--stackGap", state.layout.stackGap + "px");
 
+    state.typography.font = resolveFont();
     r.setProperty("--font", state.typography.font);
     r.setProperty("--numSize", state.typography.numSize + "px");
     r.setProperty("--numWeight", state.typography.numWeight);
@@ -461,7 +544,6 @@
     r.setProperty("--chroma", state.effects.chromaOn ? (state.effects.chromaPx + "px") : "0px");
 
     r.setProperty("--emberOpacity", state.ember.opacity);
-    r.setProperty("--emberSpeed", state.ember.speed);
   }
 
   function iconSVG(name){
@@ -512,6 +594,9 @@
   }
 
   function render(){
+    // watermark
+    wmEl.textContent = (state.watermark?.text || DEFAULTS.watermark.text).toUpperCase();
+
     leftLabelEl.textContent  = (state.textIcons.leftLabel  || "killed").toUpperCase();
     rightLabelEl.textContent = (state.textIcons.rightLabel || "failed").toUpperCase();
     winNumEl.textContent = state.scoreWin;
@@ -530,22 +615,6 @@
 
     winRingEl.style.display = state.spinner.on ? "block" : "none";
     loseRingEl.style.display = state.spinner.on ? "block" : "none";
-  }
-
-  // visibility
-  let hideTimer = null;
-  function showWidgetFor(seconds){
-    widgetEl.classList.remove("hidden");
-    clearTimeout(hideTimer);
-    if(state.visibility === "command"){
-      const ms = Math.max(1, seconds || state.showSeconds || 8) * 1000;
-      hideTimer = setTimeout(hideWidget, ms);
-    }
-  }
-  function hideWidget(){ widgetEl.classList.add("hidden"); }
-  function applyVisibilityOnLoad(){
-    if(state.visibility === "always") widgetEl.classList.remove("hidden");
-    else (state.hideInitially ? hideWidget() : showWidgetFor(state.showSeconds));
   }
 
   // punch
@@ -569,7 +638,6 @@
   const ectx = embersCanvas.getContext("2d", { alpha:true });
   const sparksCanvas = $("sparks");
   const sctx = sparksCanvas.getContext("2d", { alpha:true });
-
   const bloodCanvas = $("blood");
   const bctx = bloodCanvas.getContext("2d", { alpha:true });
 
@@ -606,23 +674,24 @@
     }
   }
 
+  // ✅ Sparks: stronger + glow + additive blending
   function burstSparks(side){
     if(!state.effects.sparksOn) return;
     const w = sparksCanvas.width, h = sparksCanvas.height;
     const x = side === "win" ? w * 0.18 : w * 0.82;
     const y = h * 0.50;
     const baseCol = side === "win" ? state.colors.spinWin : state.colors.spinLose;
-    const amt = clamp(state.effects.sparksAmount, 0, 160);
+    const amt = clamp(state.effects.sparksAmount, 0, 200);
 
     for(let i=0;i<amt;i++){
       const ang = Math.random() * Math.PI * 2;
-      const spd = 0.8 + Math.random() * 2.8;
+      const spd = 1.4 + Math.random() * 4.0;
       sparks.push({
         x, y,
         vx: Math.cos(ang) * spd,
-        vy: Math.sin(ang) * spd - (0.8 + Math.random()*0.8),
+        vy: Math.sin(ang) * spd - (1.4 + Math.random()*1.2),
         life: 1,
-        r: 1 + Math.random()*2.6,
+        r: 1.2 + Math.random()*3.8,
         col: baseCol
       });
     }
@@ -716,16 +785,22 @@
 
     // sparks
     sctx.clearRect(0,0,sparksCanvas.width,sparksCanvas.height);
+    sctx.save();
+    sctx.globalCompositeOperation = "lighter";
     for(const p of sparks){
       p.x += p.vx; p.y += p.vy;
-      p.vy += 0.05; p.vx *= 0.985;
-      p.life -= 0.022;
+      p.vy += 0.08; p.vx *= 0.985;
+      p.life -= 0.020;
 
+      const a = Math.max(0, p.life);
       sctx.beginPath();
-      sctx.fillStyle = hexToRgba(p.col, Math.max(0, p.life));
+      sctx.fillStyle = hexToRgba(p.col, a);
+      sctx.shadowColor = p.col;
+      sctx.shadowBlur = 14;
       sctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
       sctx.fill();
     }
+    sctx.restore();
     sparks = sparks.filter(p => p.life > 0);
 
     // blood
@@ -766,14 +841,14 @@
     setCSSVars();
     render();
     resizeCanvases();
-    applyVisibilityOnLoad();
   }
 
-  // reliable sync: storage event + polling
+  // sync settings->overlay reliably
   window.addEventListener("storage", (e) => {
     if(e.key !== STORAGE_KEY) return;
     state = loadState();
     applyAll();
+    ensureTwitch(true);
   });
 
   let lastRaw = localStorage.getItem(STORAGE_KEY);
@@ -783,14 +858,20 @@
     lastRaw = raw;
     state = loadState();
     applyAll();
+    ensureTwitch(true);
   }, 200);
 
   applyAll();
   requestAnimationFrame(step);
 
-  // ✅ Twitch chat commands (WORKING)
+  // ✅ Twitch chat commands: ONLY win/lose/reset
   let client = null;
   let connectedChannel = null;
+  let lastConnectAttempt = 0;
+
+  function setChatStatus(text){
+    chatStatusEl.textContent = text;
+  }
 
   function isAllowed(userstate){
     if(state.allowEveryone) return true;
@@ -798,66 +879,106 @@
     return !!b.broadcaster || !!b.moderator;
   }
 
-  function ensureTwitch(){
-    const desired = (state.channel || "").replace(/^#/, "").trim().toLowerCase();
-    if(!desired) return;
-
-    if(client && connectedChannel === desired) return;
-
-    // reconnect
-    try { client?.disconnect?.(); } catch {}
-    client = new tmi.Client({
-      connection:{ secure:true, reconnect:true },
-      channels:[ desired ]
-    });
-
-    client.on("message", (_chan, userstate, message, self) => {
-      if(self) return;
-      const msg = (message||"").trim().toLowerCase();
-      if(!msg.startsWith("!")) return;
-      if(!isAllowed(userstate)) return;
-
-      if(msg === "!dbdwin") bumpWin(1);
-      if(msg === "!dbdlose") bumpLose(1);
-      if(msg === "!dbdreset") resetScores();
-
-      if(msg.startsWith("!dbdset")){
-        const parts = msg.split(/\s+/);
-        const a = parseInt(parts[1],10);
-        const b = parseInt(parts[2],10);
-        if(Number.isFinite(a)) state.scoreWin = clamp(a,0,99);
-        if(Number.isFinite(b)) state.scoreLose = clamp(b,0,99);
-        saveState(); render(); pop(winNumEl); pop(loseNumEl); doShake();
-        if(state.visibility === "command") showWidgetFor(state.showSeconds);
-      }
-    });
-
-    client.connect().catch(()=>{});
-    connectedChannel = desired;
-  }
-
-  // keep twitch connection in sync if channel changes via settings
-  setInterval(() => ensureTwitch(), 1200);
-  ensureTwitch();
-
-  function bumpWin(n=1){
-    state.scoreWin = clamp(state.scoreWin + n, 0, 99);
+  function bumpWin(){
+    state.scoreWin = clamp(state.scoreWin + 1, 0, 99);
     saveState(); render();
     pop(winNumEl); flashGlow("win"); doShake(); burstSparks("win");
-    if(state.visibility === "command") showWidgetFor(state.showSeconds);
   }
-  function bumpLose(n=1){
-    state.scoreLose = clamp(state.scoreLose + n, 0, 99);
+  function bumpLose(){
+    state.scoreLose = clamp(state.scoreLose + 1, 0, 99);
     saveState(); render();
     pop(loseNumEl); flashGlow("lose"); doShake(); burstSparks("lose");
-    if(state.visibility === "command") showWidgetFor(state.showSeconds);
   }
   function resetScores(){
     state.scoreWin = 0; state.scoreLose = 0;
     saveState(); render();
     pop(winNumEl); pop(loseNumEl); doShake();
-    if(state.visibility === "command") showWidgetFor(state.showSeconds);
   }
+
+  function cleanupClient(){
+    try{
+      if(client){
+        client.removeAllListeners();
+        client.disconnect();
+      }
+    } catch {}
+    client = null;
+    connectedChannel = null;
+  }
+
+  function ensureTwitch(force=false){
+    const desired = (state.channel || "").replace(/^#/, "").trim().toLowerCase();
+    if(!desired){
+      cleanupClient();
+      setChatStatus("CHAT: NO CHANNEL");
+      return;
+    }
+
+    if(!force && client && connectedChannel === desired) return;
+
+    // prevent spam connect loops
+    const now = Date.now();
+    if(!force && (now - lastConnectAttempt) < 2500) return;
+    lastConnectAttempt = now;
+
+    cleanupClient();
+
+    try{
+      client = new tmi.Client({
+        connection: { secure: true, reconnect: true },
+        channels: [ desired ]
+      });
+
+      client.on("connecting", () => setChatStatus(`CHAT: CONNECTING #${desired}`));
+      client.on("connected", () => setChatStatus(`CHAT: CONNECTED #${desired}`));
+      client.on("disconnected", () => setChatStatus(`CHAT: DISCONNECTED`));
+      client.on("reconnect", () => setChatStatus(`CHAT: RECONNECTING…`));
+
+      client.on("notice", (_chan, msgid, message) => {
+        // helpful to see if Twitch rejects anything
+        setChatStatus(`CHAT: NOTICE ${msgid}`);
+      });
+
+      client.on("message", (_chan, userstate, message, self) => {
+        if(self) return;
+        const msg = (message||"").trim().toLowerCase();
+        if(!msg.startsWith("!")) return;
+
+        if(!isAllowed(userstate)) return;
+
+        if(msg === "!dbdwin") bumpWin();
+        else if(msg === "!dbdlose") bumpLose();
+        else if(msg === "!dbdreset") resetScores();
+      });
+
+      client.connect()
+        .then(() => {
+          connectedChannel = desired;
+          setChatStatus(`CHAT: CONNECTED #${desired}`);
+        })
+        .catch(() => {
+          setChatStatus(`CHAT: FAILED (retrying)`);
+        });
+    } catch {
+      setChatStatus(`CHAT: ERROR`);
+    }
+  }
+
+  // periodic health check / reconnect (Streamlabs can be flaky)
+  setInterval(() => {
+    const desired = (state.channel || "").replace(/^#/, "").trim().toLowerCase();
+    if(!desired) return;
+    if(!client || connectedChannel !== desired){
+      ensureTwitch(true);
+      return;
+    }
+    // if tmi drops silently, reconnect
+    if(typeof client.readyState === "string" && client.readyState !== "OPEN"){
+      ensureTwitch(true);
+    }
+  }, 6000);
+
+  ensureTwitch(true);
 </script>
 </body>
 </html>
