@@ -42,7 +42,7 @@
   }
   .heroInner{ position:relative; z-index:2; }
   .heroTitle{ margin:0; font-size: clamp(34px, 5vw, 62px); font-weight: 1000; letter-spacing: .6px; }
-  .heroSub{ margin-top: 6px; font-size: 18px; letter-spacing: 2px; font-weight: 1000; color: var(--pink); text-transform: uppercase; }
+  .heroSub{ margin-top: 6px; font-size: 14px; letter-spacing: 2px; font-weight: 1000; color: var(--pink); text-transform: uppercase; }
 
   .grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
@@ -80,7 +80,7 @@
   label{ color: rgba(255,255,255,.90); font-weight: 800; }
   .hint{ color: var(--muted2); font-size: 12px; margin-top: 2px; }
 
-  input[type="text"], input[type="number"], select, textarea{
+  input[type="text"], input[type="number"], select{
     width: 360px; max-width: 100%;
     padding: 10px 12px;
     border-radius: 14px;
@@ -89,7 +89,6 @@
     color: #fff;
     outline: none;
   }
-  textarea{ min-height: 120px; resize: vertical; }
   input[type="number"]{ width: 140px; }
   input[type="color"]{ width: 58px; height: 40px; border-radius: 12px; border: none; background: transparent; padding: 0; }
   input[type="range"]{ width: 360px; max-width:100%; }
@@ -110,6 +109,14 @@
   .split{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 980px){ .split{ grid-template-columns:1fr; } }
   hr{ border:none; border-top:1px solid rgba(255,255,255,.12); margin: 14px 0; }
+  code{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    background: rgba(0,0,0,.35);
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.10);
+    color: rgba(255,255,255,.92);
+  }
 </style>
 </head>
 
@@ -119,7 +126,11 @@
     <div class="hero">
       <div class="heroInner">
         <h1 class="heroTitle">DBD Scoreboard</h1>
-        <div class="heroSub">Settings • v5.3 (Blood)</div>
+        <div class="heroSub">Settings • v6.0 • ALL FX OFF BY DEFAULT</div>
+        <div class="hint" style="margin-top:10px">
+          Streamlabs cache fix: bump URLs like <code>?v=2</code> → <code>?v=3</code><br/>
+          Best reliability: add this page as a hidden Browser Source and use “Interact”.
+        </div>
       </div>
     </div>
 
@@ -130,7 +141,7 @@
         <div class="row">
           <div>
             <label>Twitch Channel</label>
-            <div class="hint">Chat: !dbdwin / !dbdlose / !dbdreset / !dbdset 3 2</div>
+            <div class="hint">Commands: <code>!dbdwin</code> <code>!dbdlose</code> <code>!dbdreset</code> <code>!dbdset 3 2</code></div>
           </div>
           <input id="channel" type="text" placeholder="ghostephace">
         </div>
@@ -181,15 +192,77 @@
           <button id="btnApplyScores">Apply</button>
           <button id="btnZero">Zero</button>
         </div>
+      </div>
 
-        <div class="hint" style="margin-top:10px;">
-          Streamlabs cache fix: bump overlay URL ?v=1 → ?v=2
+      <div class="card wide">
+        <div class="chip"><div class="skull">📐</div><h2>Layout</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Width</label><div class="hint">(px)</div></div><input id="w" type="number" min="400" max="2000"></div>
+            <div class="row"><div><label>Height</label><div class="hint">(px)</div></div><input id="h" type="number" min="120" max="500"></div>
+            <div class="row"><div><label>Scale</label><div class="hint">0.5 – 2.0</div></div><input id="scale" type="range" min="0.5" max="2" step="0.01"></div>
+            <div class="row"><div><label>Radius</label><div class="hint">(px)</div></div><input id="radius" type="number" min="0" max="999"></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Circle size</label><div class="hint">(px)</div></div><input id="circle" type="number" min="90" max="220"></div>
+            <div class="row"><div><label>Icon size</label><div class="hint">(px)</div></div><input id="icon" type="number" min="18" max="140"></div>
+            <div class="row"><div><label>Column width</label><div class="hint">(px)</div></div><input id="colW" type="number" min="120" max="300"></div>
+            <div class="row"><div><label>Padding X</label><div class="hint">(px)</div></div><input id="padX" type="number" min="0" max="60"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <div class="chip"><div class="skull">🔤</div><h2>Typography</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Number size</label><div class="hint">(px)</div></div><input id="numSize" type="number" min="30" max="140"></div>
+            <div class="row"><div><label>Number weight</label><div class="hint">400–1000</div></div><input id="numWeight" type="number" min="400" max="1000"></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Label size</label><div class="hint">(px)</div></div><input id="labelSize" type="number" min="10" max="44"></div>
+            <div class="row"><div><label>Label spacing</label><div class="hint">(px)</div></div><input id="labelSpacing" type="number" min="0" max="6" step="0.1"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <div class="chip"><div class="skull">🎨</div><h2>Colors</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Highlight</label></div><input id="highlight" type="color"></div>
+            <div class="row"><div><label>Text main</label></div><input id="textMain" type="color"></div>
+            <div class="row"><div><label>Text sub</label></div><input id="textSub" type="color"></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Spin (win)</label></div><input id="spinWin" type="color"></div>
+            <div class="row"><div><label>Spin (lose)</label></div><input id="spinLose" type="color"></div>
+            <div class="row"><div><label>Pulse (win)</label></div><input id="pulseWin" type="color"></div>
+            <div class="row"><div><label>Pulse (lose)</label></div><input id="pulseLose" type="color"></div>
+          </div>
+        </div>
+        <div class="hint">Background/border are stored as RGBA strings (advanced). Defaults are fine.</div>
+      </div>
+
+      <div class="card wide">
+        <div class="chip"><div class="skull">🌀</div><h2>Spinner + Glow</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Spinner</label></div>
+              <select id="spinnerOn"><option value="true">On</option><option value="false">Off</option></select>
+            </div>
+            <div class="row"><div><label>Spinner thickness</label></div><input id="spinThick" type="range" min="1" max="10" step="1"></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Glow A</label></div><input id="glowA" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Glow B</label></div><input id="glowB" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Glow C</label></div><input id="glowC" type="range" min="0" max="1" step="0.01"></div>
+          </div>
         </div>
       </div>
 
       <div class="card wide">
         <div class="chip"><div class="skull">✨</div><h2>Icons (Upload + Tint)</h2></div>
-
         <div class="split">
           <div>
             <div class="row"><div><label>Left label</label></div><input id="leftLabel" type="text"></div>
@@ -221,26 +294,79 @@
             <div class="row"><div><label>Right tint color</label></div><input id="rightTintColor" type="color"></div>
           </div>
         </div>
+      </div>
 
-        <div class="hint" style="margin-top:10px;">
-          Upload icons are saved to the browser storage you upload from.
+      <div class="card wide">
+        <div class="chip"><div class="skull">🎬</div><h2>FX Toggles + Params</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Sheen</label></div><select id="sheenOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Sheen opacity</label></div><input id="sheenOpacity" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Sheen speed</label><div class="hint">(sec)</div></div><input id="sheenSpeedSec" type="range" min="1" max="10" step="0.1"></div>
+
+            <hr/>
+
+            <div class="row"><div><label>Scanlines</label></div><select id="scanOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Scan opacity</label></div><input id="scanOpacity" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Scan step</label><div class="hint">(px)</div></div><input id="scanStep" type="range" min="2" max="16" step="1"></div>
+          </div>
+
+          <div>
+            <div class="row"><div><label>Grain</label></div><select id="grainOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Grain opacity</label></div><input id="grainOpacity" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Grain size</label><div class="hint">(px)</div></div><input id="grainSize" type="range" min="40" max="240" step="5"></div>
+
+            <hr/>
+
+            <div class="row"><div><label>Vignette</label></div><select id="vignetteOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Vignette strength</label></div><input id="vignette" type="range" min="0" max="0.9" step="0.01"></div>
+
+            <hr/>
+
+            <div class="row"><div><label>Chroma</label></div><select id="chromaOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Chroma px</label></div><input id="chromaPx" type="range" min="0" max="6" step="0.5"></div>
+          </div>
+        </div>
+
+        <hr/>
+
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Shake on score</label></div><select id="shakeOn"><option value="false">Off</option><option value="true">On</option></select></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Sparks</label></div><select id="sparksOn"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Sparks amount</label></div><input id="sparksAmount" type="range" min="0" max="160" step="1"></div>
+          </div>
         </div>
       </div>
 
       <div class="card wide">
-        <div class="chip"><div class="skull">🔥</div><h2>Blood Drips</h2></div>
-
+        <div class="chip"><div class="skull">🔥</div><h2>Embers</h2></div>
         <div class="split">
           <div>
-            <div class="row">
-              <div><label>Enable blood</label></div>
-              <select id="bloodOn"><option value="true">On</option><option value="false">Off</option></select>
-            </div>
+            <div class="row"><div><label>Enable embers</label></div><select id="emberEnabled"><option value="false">Off</option><option value="true">On</option></select></div>
+            <div class="row"><div><label>Opacity</label></div><input id="emberOpacity" type="range" min="0" max="1" step="0.01"></div>
+            <div class="row"><div><label>Speed</label></div><input id="emberSpeed" type="range" min="0.1" max="2" step="0.01"></div>
+            <div class="row"><div><label>Count</label></div><input id="emberCount" type="range" min="0" max="200" step="1"></div>
+          </div>
+          <div>
+            <div class="row"><div><label>Color 1</label></div><input id="emberC1" type="color"></div>
+            <div class="row"><div><label>Color 2</label></div><input id="emberC2" type="color"></div>
+            <div class="row"><div><label>Color 3</label></div><input id="emberC3" type="color"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card wide">
+        <div class="chip"><div class="skull">🩸</div><h2>Blood Drips</h2></div>
+        <div class="split">
+          <div>
+            <div class="row"><div><label>Enable blood</label></div><select id="bloodOn"><option value="false">Off</option><option value="true">On</option></select></div>
             <div class="row"><div><label>Blood color</label></div><input id="bloodColor" type="color"></div>
             <div class="row"><div><label>Opacity</label></div><input id="bloodOpacity" type="range" min="0" max="1" step="0.01"></div>
-            <div class="row"><div><label>Drip rate (per sec)</label></div><input id="bloodRate" type="range" min="0" max="3" step="0.05"></div>
+            <div class="row"><div><label>Rate (per sec)</label></div><input id="bloodRate" type="range" min="0" max="3" step="0.05"></div>
           </div>
-
           <div>
             <div class="row"><div><label>Speed</label></div><input id="bloodSpeed" type="range" min="0.2" max="3" step="0.05"></div>
             <div class="row"><div><label>Length</label></div><input id="bloodLength" type="range" min="0" max="1" step="0.01"></div>
@@ -257,6 +383,7 @@
 <script>
   const STORAGE_KEY = "dbd_widget_live";
 
+  // Must match overlay defaults (FX off by default)
   const DEFAULTS = {
     channel: "ghostephace",
     allowEveryone: false,
@@ -266,16 +393,43 @@
     showSeconds: 8,
     hideInitially: true,
 
-    effects: {
-      bloodOn: true,
-      bloodColor: "#8b0000",
-      bloodOpacity: 0.85,
-      bloodRate: 0.55,
-      bloodSpeed: 1.05,
-      bloodLength: 0.75,
-      bloodThickness: 0.70,
-      bloodWobble: 0.60
+    layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
+    typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+    colors: {
+      bg:"rgba(13,13,14,.78)",
+      border:"rgba(255,255,255,.07)",
+      textMain:"#EFEFEF",
+      textSub:"#C0C0C0",
+      highlight:"#FF4500",
+      spinWin:"#00FF00",
+      spinLose:"#00FF00",
+      pulseWin:"#FFFF00",
+      pulseLose:"#FFFF00"
     },
+    glow: { a:.45, b:.45, c:.22 },
+    spinner: { on:true, thick:3 },
+
+    effects: {
+      sheenOn:false, scanOn:false, grainOn:false, vignetteOn:false, chromaOn:false,
+      sheenOpacity:.35, sheenSpeedSec:3.2,
+      scanOpacity:.14, scanStep:6,
+      grainOpacity:.12, grainSize:120,
+      vignette:.26,
+      chromaPx:2,
+      shakeOn:false,
+      sparksOn:false, sparksAmount:28,
+
+      bloodOn:false,
+      bloodColor:"#8b0000",
+      bloodOpacity:0.85,
+      bloodRate:0.55,
+      bloodSpeed:1.05,
+      bloodLength:0.75,
+      bloodThickness:0.70,
+      bloodWobble:0.60
+    },
+
+    ember: { enabled:false, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:.50, speed:.60, targetCount:70 },
 
     textIcons: {
       leftLabel:"killed", rightLabel:"failed",
@@ -310,7 +464,7 @@
   let state = loadState();
   function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
-  function clamp(n, min=0, max=99){
+  function clampInt(n, min=0, max=99){
     n = Number(n);
     if(!Number.isFinite(n)) n = 0;
     return Math.max(min, Math.min(max, Math.round(n)));
@@ -326,15 +480,50 @@
   }
 
   function bind(){
+    // basics
     $("channel").value = state.channel;
     $("allowEveryone").value = String(state.allowEveryone);
     $("visibility").value = state.visibility;
     $("showSeconds").value = state.showSeconds;
     $("hideInitially").value = String(state.hideInitially);
 
+    // score
     $("scoreWin").value = state.scoreWin;
     $("scoreLose").value = state.scoreLose;
 
+    // layout
+    $("w").value = state.layout.w;
+    $("h").value = state.layout.h;
+    $("scale").value = state.layout.scale;
+    $("radius").value = state.layout.radius;
+    $("circle").value = state.layout.circle;
+    $("icon").value = state.layout.icon;
+    $("colW").value = state.layout.colW;
+    $("padX").value = state.layout.padX;
+
+    // typography
+    $("numSize").value = state.typography.numSize;
+    $("numWeight").value = state.typography.numWeight;
+    $("labelSize").value = state.typography.labelSize;
+    $("labelSpacing").value = state.typography.labelSpacing;
+
+    // colors
+    $("highlight").value = state.colors.highlight;
+    $("textMain").value = state.colors.textMain;
+    $("textSub").value = state.colors.textSub;
+    $("spinWin").value = state.colors.spinWin;
+    $("spinLose").value = state.colors.spinLose;
+    $("pulseWin").value = state.colors.pulseWin;
+    $("pulseLose").value = state.colors.pulseLose;
+
+    // spinner + glow
+    $("spinnerOn").value = String(state.spinner.on);
+    $("spinThick").value = state.spinner.thick;
+    $("glowA").value = state.glow.a;
+    $("glowB").value = state.glow.b;
+    $("glowC").value = state.glow.c;
+
+    // icons
     $("leftLabel").value = state.textIcons.leftLabel;
     $("rightLabel").value = state.textIcons.rightLabel;
     $("leftIconMode").value = state.textIcons.leftIconMode;
@@ -346,6 +535,39 @@
     $("leftTintColor").value = state.textIcons.leftTintColor;
     $("rightTintColor").value = state.textIcons.rightTintColor;
 
+    // FX
+    $("sheenOn").value = String(state.effects.sheenOn);
+    $("sheenOpacity").value = state.effects.sheenOpacity;
+    $("sheenSpeedSec").value = state.effects.sheenSpeedSec;
+
+    $("scanOn").value = String(state.effects.scanOn);
+    $("scanOpacity").value = state.effects.scanOpacity;
+    $("scanStep").value = state.effects.scanStep;
+
+    $("grainOn").value = String(state.effects.grainOn);
+    $("grainOpacity").value = state.effects.grainOpacity;
+    $("grainSize").value = state.effects.grainSize;
+
+    $("vignetteOn").value = String(state.effects.vignetteOn);
+    $("vignette").value = state.effects.vignette;
+
+    $("chromaOn").value = String(state.effects.chromaOn);
+    $("chromaPx").value = state.effects.chromaPx;
+
+    $("shakeOn").value = String(state.effects.shakeOn);
+    $("sparksOn").value = String(state.effects.sparksOn);
+    $("sparksAmount").value = state.effects.sparksAmount;
+
+    // embers
+    $("emberEnabled").value = String(state.ember.enabled);
+    $("emberOpacity").value = state.ember.opacity;
+    $("emberSpeed").value = state.ember.speed;
+    $("emberCount").value = state.ember.targetCount;
+    $("emberC1").value = state.ember.colors?.[0] || "#bc2e9f";
+    $("emberC2").value = state.ember.colors?.[1] || "#FFA500";
+    $("emberC3").value = state.ember.colors?.[2] || "#bc2e9f";
+
+    // blood
     $("bloodOn").value = String(state.effects.bloodOn);
     $("bloodColor").value = state.effects.bloodColor;
     $("bloodOpacity").value = state.effects.bloodOpacity;
@@ -357,31 +579,63 @@
   }
 
   function wire(){
+    // basics
     $("channel").addEventListener("input", () => { state.channel = $("channel").value.trim() || "ghostephace"; saveState(); });
     $("allowEveryone").addEventListener("change", () => { state.allowEveryone = $("allowEveryone").value === "true"; saveState(); });
     $("visibility").addEventListener("change", () => { state.visibility = $("visibility").value; saveState(); });
-    $("showSeconds").addEventListener("input", () => { state.showSeconds = clamp($("showSeconds").value,2,30); saveState(); });
+    $("showSeconds").addEventListener("input", () => { state.showSeconds = clampInt($("showSeconds").value,2,30); saveState(); });
     $("hideInitially").addEventListener("change", () => { state.hideInitially = $("hideInitially").value === "true"; saveState(); });
 
+    // score
     $("btnReset").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
-
-    $("btnWinPlus").addEventListener("click", () => { state.scoreWin = clamp(state.scoreWin + 1); saveState(); bind(); });
-    $("btnLosePlus").addEventListener("click", () => { state.scoreLose = clamp(state.scoreLose + 1); saveState(); bind(); });
+    $("btnWinPlus").addEventListener("click", () => { state.scoreWin = clampInt(state.scoreWin + 1); saveState(); bind(); });
+    $("btnLosePlus").addEventListener("click", () => { state.scoreLose = clampInt(state.scoreLose + 1); saveState(); bind(); });
     $("btnApplyScores").addEventListener("click", () => {
-      state.scoreWin = clamp($("scoreWin").value,0,99);
-      state.scoreLose = clamp($("scoreLose").value,0,99);
+      state.scoreWin = clampInt($("scoreWin").value,0,99);
+      state.scoreLose = clampInt($("scoreLose").value,0,99);
       saveState();
     });
     $("btnZero").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
 
+    // layout
+    $("w").addEventListener("change", () => { state.layout.w = clampInt($("w").value, 400, 2000); saveState(); });
+    $("h").addEventListener("change", () => { state.layout.h = clampInt($("h").value, 120, 500); saveState(); });
+    $("scale").addEventListener("input", () => { state.layout.scale = parseFloat($("scale").value); saveState(); });
+    $("radius").addEventListener("change", () => { state.layout.radius = clampInt($("radius").value, 0, 999); saveState(); });
+    $("circle").addEventListener("change", () => { state.layout.circle = clampInt($("circle").value, 90, 220); saveState(); });
+    $("icon").addEventListener("change", () => { state.layout.icon = clampInt($("icon").value, 18, 140); saveState(); });
+    $("colW").addEventListener("change", () => { state.layout.colW = clampInt($("colW").value, 120, 300); saveState(); });
+    $("padX").addEventListener("change", () => { state.layout.padX = clampInt($("padX").value, 0, 60); saveState(); });
+
+    // typography
+    $("numSize").addEventListener("change", () => { state.typography.numSize = clampInt($("numSize").value, 30, 140); saveState(); });
+    $("numWeight").addEventListener("change", () => { state.typography.numWeight = clampInt($("numWeight").value, 400, 1000); saveState(); });
+    $("labelSize").addEventListener("change", () => { state.typography.labelSize = clampInt($("labelSize").value, 10, 44); saveState(); });
+    $("labelSpacing").addEventListener("change", () => { state.typography.labelSpacing = parseFloat($("labelSpacing").value); saveState(); });
+
+    // colors
+    $("highlight").addEventListener("change", () => { state.colors.highlight = $("highlight").value; saveState(); });
+    $("textMain").addEventListener("change", () => { state.colors.textMain = $("textMain").value; saveState(); });
+    $("textSub").addEventListener("change", () => { state.colors.textSub = $("textSub").value; saveState(); });
+    $("spinWin").addEventListener("change", () => { state.colors.spinWin = $("spinWin").value; saveState(); });
+    $("spinLose").addEventListener("change", () => { state.colors.spinLose = $("spinLose").value; saveState(); });
+    $("pulseWin").addEventListener("change", () => { state.colors.pulseWin = $("pulseWin").value; saveState(); });
+    $("pulseLose").addEventListener("change", () => { state.colors.pulseLose = $("pulseLose").value; saveState(); });
+
+    // spinner + glow
+    $("spinnerOn").addEventListener("change", () => { state.spinner.on = $("spinnerOn").value === "true"; saveState(); });
+    $("spinThick").addEventListener("input", () => { state.spinner.thick = parseInt($("spinThick").value,10); saveState(); });
+    $("glowA").addEventListener("input", () => { state.glow.a = parseFloat($("glowA").value); saveState(); });
+    $("glowB").addEventListener("input", () => { state.glow.b = parseFloat($("glowB").value); saveState(); });
+    $("glowC").addEventListener("input", () => { state.glow.c = parseFloat($("glowC").value); saveState(); });
+
+    // icons
     $("leftLabel").addEventListener("input", () => { state.textIcons.leftLabel = $("leftLabel").value.trim() || "killed"; saveState(); });
     $("rightLabel").addEventListener("input", () => { state.textIcons.rightLabel = $("rightLabel").value.trim() || "failed"; saveState(); });
-
     $("leftIconMode").addEventListener("change", () => { state.textIcons.leftIconMode = $("leftIconMode").value; saveState(); });
     $("rightIconMode").addEventListener("change", () => { state.textIcons.rightIconMode = $("rightIconMode").value; saveState(); });
     $("leftIconSvg").addEventListener("change", () => { state.textIcons.leftIconSvg = $("leftIconSvg").value; saveState(); });
     $("rightIconSvg").addEventListener("change", () => { state.textIcons.rightIconSvg = $("rightIconSvg").value; saveState(); });
-
     $("leftTintOn").addEventListener("change", () => { state.textIcons.leftTintOn = $("leftTintOn").value === "true"; saveState(); });
     $("rightTintOn").addEventListener("change", () => { state.textIcons.rightTintOn = $("rightTintOn").value === "true"; saveState(); });
     $("leftTintColor").addEventListener("change", () => { state.textIcons.leftTintColor = $("leftTintColor").value; saveState(); });
@@ -393,6 +647,7 @@
       state.textIcons.leftIconMode = "upload";
       saveState();
       e.target.value = "";
+      bind();
     });
 
     $("rightFile").addEventListener("change", async (e) => {
@@ -401,9 +656,43 @@
       state.textIcons.rightIconMode = "upload";
       saveState();
       e.target.value = "";
+      bind();
     });
 
-    // blood controls
+    // FX toggles
+    $("sheenOn").addEventListener("change", () => { state.effects.sheenOn = $("sheenOn").value === "true"; saveState(); });
+    $("sheenOpacity").addEventListener("input", () => { state.effects.sheenOpacity = parseFloat($("sheenOpacity").value); saveState(); });
+    $("sheenSpeedSec").addEventListener("input", () => { state.effects.sheenSpeedSec = parseFloat($("sheenSpeedSec").value); saveState(); });
+
+    $("scanOn").addEventListener("change", () => { state.effects.scanOn = $("scanOn").value === "true"; saveState(); });
+    $("scanOpacity").addEventListener("input", () => { state.effects.scanOpacity = parseFloat($("scanOpacity").value); saveState(); });
+    $("scanStep").addEventListener("input", () => { state.effects.scanStep = parseInt($("scanStep").value,10); saveState(); });
+
+    $("grainOn").addEventListener("change", () => { state.effects.grainOn = $("grainOn").value === "true"; saveState(); });
+    $("grainOpacity").addEventListener("input", () => { state.effects.grainOpacity = parseFloat($("grainOpacity").value); saveState(); });
+    $("grainSize").addEventListener("input", () => { state.effects.grainSize = parseInt($("grainSize").value,10); saveState(); });
+
+    $("vignetteOn").addEventListener("change", () => { state.effects.vignetteOn = $("vignetteOn").value === "true"; saveState(); });
+    $("vignette").addEventListener("input", () => { state.effects.vignette = parseFloat($("vignette").value); saveState(); });
+
+    $("chromaOn").addEventListener("change", () => { state.effects.chromaOn = $("chromaOn").value === "true"; saveState(); });
+    $("chromaPx").addEventListener("input", () => { state.effects.chromaPx = parseFloat($("chromaPx").value); saveState(); });
+
+    $("shakeOn").addEventListener("change", () => { state.effects.shakeOn = $("shakeOn").value === "true"; saveState(); });
+    $("sparksOn").addEventListener("change", () => { state.effects.sparksOn = $("sparksOn").value === "true"; saveState(); });
+    $("sparksAmount").addEventListener("input", () => { state.effects.sparksAmount = parseInt($("sparksAmount").value,10); saveState(); });
+
+    // embers
+    $("emberEnabled").addEventListener("change", () => { state.ember.enabled = $("emberEnabled").value === "true"; saveState(); });
+    $("emberOpacity").addEventListener("input", () => { state.ember.opacity = parseFloat($("emberOpacity").value); saveState(); });
+    $("emberSpeed").addEventListener("input", () => { state.ember.speed = parseFloat($("emberSpeed").value); saveState(); });
+    $("emberCount").addEventListener("input", () => { state.ember.targetCount = parseInt($("emberCount").value,10); saveState(); });
+    const syncEmberColors = () => { state.ember.colors = [ $("emberC1").value, $("emberC2").value, $("emberC3").value ]; saveState(); };
+    $("emberC1").addEventListener("change", syncEmberColors);
+    $("emberC2").addEventListener("change", syncEmberColors);
+    $("emberC3").addEventListener("change", syncEmberColors);
+
+    // blood
     $("bloodOn").addEventListener("change", () => { state.effects.bloodOn = $("bloodOn").value === "true"; saveState(); });
     $("bloodColor").addEventListener("change", () => { state.effects.bloodColor = $("bloodColor").value; saveState(); });
     $("bloodOpacity").addEventListener("input", () => { state.effects.bloodOpacity = parseFloat($("bloodOpacity").value); saveState(); });
