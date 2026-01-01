@@ -291,7 +291,7 @@
       </div>
     </div>
 
-    <div class="version">LIVE • v5.3 (BLOOD)</div>
+    <div class="version">LIVE • v6.0</div>
   </div>
 </div>
 
@@ -299,38 +299,49 @@
 <script>
   const STORAGE_KEY = "dbd_widget_live";
 
+  // ✅ All FX toggles OFF by default per your request
   const DEFAULTS = {
     channel: "ghostephace",
     allowEveryone: false,
+
     scoreWin: 0,
     scoreLose: 0,
-    visibility: "always",
+
+    visibility: "always",   // always | command
     showSeconds: 8,
     hideInitially: true,
 
     layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
     typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+
     colors: {
-      bg:"rgba(13,13,14,.78)", border:"rgba(255,255,255,.07)",
-      textMain:"#EFEFEF", textSub:"#C0C0C0", highlight:"#FF4500",
-      spinWin:"#00FF00", spinLose:"#00FF00", pulseWin:"#FFFF00", pulseLose:"#FFFF00"
+      bg:"rgba(13,13,14,.78)",
+      border:"rgba(255,255,255,.07)",
+      textMain:"#EFEFEF",
+      textSub:"#C0C0C0",
+      highlight:"#FF4500",
+      spinWin:"#00FF00",
+      spinLose:"#00FF00",
+      pulseWin:"#FFFF00",
+      pulseLose:"#FFFF00"
     },
+
     glow: { a:.45, b:.45, c:.22 },
     spinner: { on:true, thick:3 },
 
     effects: {
-      sheenOn:true, scanOn:true, grainOn:true, vignetteOn:true, chromaOn:true,
+      sheenOn:false, scanOn:false, grainOn:false, vignetteOn:false, chromaOn:false,
       sheenOpacity:.35, sheenSpeedSec:3.2,
       scanOpacity:.14, scanStep:6,
       grainOpacity:.12, grainSize:120,
       vignette:.26,
       chromaPx:2,
-      shakeOn:true,
 
-      sparksOn:true, sparksAmount:28,
+      shakeOn:false,
+      sparksOn:false, sparksAmount:28,
 
-      /* 🩸 BLOOD DRIP SETTINGS */
-      bloodOn: true,
+      // 🩸 Blood (OFF by default)
+      bloodOn: false,
       bloodColor: "#8b0000",
       bloodOpacity: 0.85,
       bloodRate: 0.55,
@@ -340,7 +351,8 @@
       bloodWobble: 0.60
     },
 
-    ember: { enabled:true, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:.50, speed:.60, targetCount:70 },
+    // 🔥 Embers (OFF by default)
+    ember: { enabled:false, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:.50, speed:.60, targetCount:70 },
 
     textIcons: {
       leftLabel:"killed", rightLabel:"failed",
@@ -616,6 +628,7 @@
     }
   }
 
+  // Blood
   function spawnDrip(){
     const w = bloodCanvas.width;
     const h = bloodCanvas.height;
@@ -627,7 +640,6 @@
     const thick = 2 + thickScale * 10;
     const len   = (0.35 + lenScale * 1.25) * h;
 
-    // spawn from top edge (slightly randomized)
     const x = Math.random() * w;
 
     drips.push({
@@ -649,7 +661,6 @@
     bctx.save();
     bctx.globalAlpha = op * d.life;
 
-    // trail
     bctx.beginPath();
     bctx.lineCap = "round";
     bctx.lineWidth = d.w;
@@ -658,13 +669,11 @@
     bctx.lineTo(d.x, d.y + d.len);
     bctx.stroke();
 
-    // bulb at end
     bctx.beginPath();
     bctx.fillStyle = col;
     bctx.arc(d.x, d.y + d.len, d.w * 0.65, 0, Math.PI * 2);
     bctx.fill();
 
-    // wet highlight
     bctx.globalAlpha = op * d.life * 0.16;
     bctx.strokeStyle = "rgba(255,255,255,.35)";
     bctx.lineWidth = Math.max(1, d.w * 0.22);
@@ -721,9 +730,8 @@
 
     // blood
     bctx.clearRect(0,0,bloodCanvas.width,bloodCanvas.height);
-
     if(state.effects.bloodOn){
-      const rate = Math.max(0, Number(state.effects.bloodRate ?? 0.55)); // drips/sec
+      const rate = Math.max(0, Number(state.effects.bloodRate ?? 0.55));
       const speedMul = Math.max(0.1, Number(state.effects.bloodSpeed ?? 1.05));
       const wob = Number(state.effects.bloodWobble ?? 0.6);
 
@@ -737,14 +745,11 @@
 
       for(const d of drips){
         d.phase += 0.02 * dt;
-
         d.x += d.vx * dt * 0.02;
         d.x += Math.sin(d.phase) * wob * 0.06 * dt;
-
         d.y += d.vy * dt * 0.06 * speedMul;
 
         if(d.y > h * 0.55) d.life -= 0.0025 * dt;
-
         drawDrip(d);
       }
 
@@ -783,15 +788,57 @@
   applyAll();
   requestAnimationFrame(step);
 
-  // Chat commands
-  const client = new tmi.Client({ connection:{ secure:true, reconnect:true }, channels:[ state.channel ] });
-  client.connect().catch(()=>{});
+  // ✅ Twitch chat commands (WORKING)
+  let client = null;
+  let connectedChannel = null;
 
   function isAllowed(userstate){
     if(state.allowEveryone) return true;
     const b = userstate.badges || {};
     return !!b.broadcaster || !!b.moderator;
   }
+
+  function ensureTwitch(){
+    const desired = (state.channel || "").replace(/^#/, "").trim().toLowerCase();
+    if(!desired) return;
+
+    if(client && connectedChannel === desired) return;
+
+    // reconnect
+    try { client?.disconnect?.(); } catch {}
+    client = new tmi.Client({
+      connection:{ secure:true, reconnect:true },
+      channels:[ desired ]
+    });
+
+    client.on("message", (_chan, userstate, message, self) => {
+      if(self) return;
+      const msg = (message||"").trim().toLowerCase();
+      if(!msg.startsWith("!")) return;
+      if(!isAllowed(userstate)) return;
+
+      if(msg === "!dbdwin") bumpWin(1);
+      if(msg === "!dbdlose") bumpLose(1);
+      if(msg === "!dbdreset") resetScores();
+
+      if(msg.startsWith("!dbdset")){
+        const parts = msg.split(/\s+/);
+        const a = parseInt(parts[1],10);
+        const b = parseInt(parts[2],10);
+        if(Number.isFinite(a)) state.scoreWin = clamp(a,0,99);
+        if(Number.isFinite(b)) state.scoreLose = clamp(b,0,99);
+        saveState(); render(); pop(winNumEl); pop(loseNumEl); doShake();
+        if(state.visibility === "command") showWidgetFor(state.showSeconds);
+      }
+    });
+
+    client.connect().catch(()=>{});
+    connectedChannel = desired;
+  }
+
+  // keep twitch connection in sync if channel changes via settings
+  setInterval(() => ensureTwitch(), 1200);
+  ensureTwitch();
 
   function bumpWin(n=1){
     state.scoreWin = clamp(state.scoreWin + n, 0, 99);
@@ -805,33 +852,12 @@
     pop(loseNumEl); flashGlow("lose"); doShake(); burstSparks("lose");
     if(state.visibility === "command") showWidgetFor(state.showSeconds);
   }
-  function reset(){
+  function resetScores(){
     state.scoreWin = 0; state.scoreLose = 0;
     saveState(); render();
     pop(winNumEl); pop(loseNumEl); doShake();
     if(state.visibility === "command") showWidgetFor(state.showSeconds);
   }
-
-  client.on("message", (_chan, userstate, message, self) => {
-    if(self) return;
-    const msg = (message||"").trim().toLowerCase();
-    if(!msg.startsWith("!")) return;
-    if(!isAllowed(userstate)) return;
-
-    if(msg === "!dbdwin") bumpWin(1);
-    if(msg === "!dbdlose") bumpLose(1);
-    if(msg === "!dbdreset") reset();
-
-    if(msg.startsWith("!dbdset")){
-      const parts = msg.split(/\s+/);
-      const a = parseInt(parts[1],10);
-      const b = parseInt(parts[2],10);
-      if(Number.isFinite(a)) state.scoreWin = clamp(a,0,99);
-      if(Number.isFinite(b)) state.scoreLose = clamp(b,0,99);
-      saveState(); render(); pop(winNumEl); pop(loseNumEl); doShake();
-      if(state.visibility === "command") showWidgetFor(state.showSeconds);
-    }
-  });
 </script>
 </body>
 </html>
