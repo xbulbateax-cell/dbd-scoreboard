@@ -126,10 +126,11 @@
     <div class="hero">
       <div class="heroInner">
         <h1 class="heroTitle">DBD Scoreboard</h1>
-        <div class="heroSub">Settings • v6.0 • ALL FX OFF BY DEFAULT</div>
+        <div class="heroSub">Settings • v6.2</div>
         <div class="hint" style="margin-top:10px">
-          Streamlabs cache fix: bump URLs like <code>?v=2</code> → <code>?v=3</code><br/>
-          Best reliability: add this page as a hidden Browser Source and use “Interact”.
+          Commands: <code>!dbdwin</code> <code>!dbdlose</code> <code>!dbdreset</code><br/>
+          Streamlabs cache fix: bump <code>?v=2</code> → <code>?v=3</code><br/>
+          For best reliability: add this settings page as a hidden Browser Source and use “Interact”.
         </div>
       </div>
     </div>
@@ -141,7 +142,7 @@
         <div class="row">
           <div>
             <label>Twitch Channel</label>
-            <div class="hint">Commands: <code>!dbdwin</code> <code>!dbdlose</code> <code>!dbdreset</code> <code>!dbdset 3 2</code></div>
+            <div class="hint">Must match your channel name (no URL needed)</div>
           </div>
           <input id="channel" type="text" placeholder="ghostephace">
         </div>
@@ -155,24 +156,8 @@
         </div>
 
         <div class="row">
-          <div><label>Visibility</label><div class="hint">Command mode = show briefly after updates</div></div>
-          <select id="visibility">
-            <option value="always">Always</option>
-            <option value="command">Command mode</option>
-          </select>
-        </div>
-
-        <div class="row">
-          <div><label>Show seconds (command mode)</label></div>
-          <input id="showSeconds" type="range" min="2" max="30" step="1">
-        </div>
-
-        <div class="row">
-          <div><label>Hide initially (command mode)</label></div>
-          <select id="hideInitially">
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
+          <div><label>Watermark text</label><div class="hint">Top center label</div></div>
+          <input id="wmText" type="text" placeholder="GHOSTEPHACE • DBD SCOREBOARD">
         </div>
 
         <div class="btns">
@@ -195,6 +180,38 @@
       </div>
 
       <div class="card wide">
+        <div class="chip"><div class="skull">🔤</div><h2>Font + Typography</h2></div>
+        <div class="split">
+          <div>
+            <div class="row">
+              <div><label>Font preset</label><div class="hint">Pick “Custom” to type your own</div></div>
+              <select id="fontChoice">
+                <option value="system">System (default)</option>
+                <option value="impact">Impact</option>
+                <option value="inter">Inter</option>
+                <option value="montserrat">Montserrat</option>
+                <option value="orbitron">Orbitron</option>
+                <option value="bebas">Bebas Neue</option>
+                <option value="comic">Comic Sans (lol)</option>
+                <option value="custom">Custom…</option>
+              </select>
+            </div>
+            <div class="row">
+              <div><label>Custom font</label><div class="hint">Example: <code>'Arial Black', Impact, sans-serif</code></div></div>
+              <input id="customFont" type="text" placeholder="'Arial Black', Impact, sans-serif">
+            </div>
+          </div>
+          <div>
+            <div class="row"><div><label>Number size</label><div class="hint">(px)</div></div><input id="numSize" type="number" min="30" max="140"></div>
+            <div class="row"><div><label>Number weight</label><div class="hint">400–1000</div></div><input id="numWeight" type="number" min="400" max="1000"></div>
+            <div class="row"><div><label>Label size</label><div class="hint">(px)</div></div><input id="labelSize" type="number" min="10" max="44"></div>
+            <div class="row"><div><label>Label spacing</label><div class="hint">(px)</div></div><input id="labelSpacing" type="number" min="0" max="6" step="0.1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Everything else stays “full” -->
+      <div class="card wide">
         <div class="chip"><div class="skull">📐</div><h2>Layout</h2></div>
         <div class="split">
           <div>
@@ -208,20 +225,6 @@
             <div class="row"><div><label>Icon size</label><div class="hint">(px)</div></div><input id="icon" type="number" min="18" max="140"></div>
             <div class="row"><div><label>Column width</label><div class="hint">(px)</div></div><input id="colW" type="number" min="120" max="300"></div>
             <div class="row"><div><label>Padding X</label><div class="hint">(px)</div></div><input id="padX" type="number" min="0" max="60"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card wide">
-        <div class="chip"><div class="skull">🔤</div><h2>Typography</h2></div>
-        <div class="split">
-          <div>
-            <div class="row"><div><label>Number size</label><div class="hint">(px)</div></div><input id="numSize" type="number" min="30" max="140"></div>
-            <div class="row"><div><label>Number weight</label><div class="hint">400–1000</div></div><input id="numWeight" type="number" min="400" max="1000"></div>
-          </div>
-          <div>
-            <div class="row"><div><label>Label size</label><div class="hint">(px)</div></div><input id="labelSize" type="number" min="10" max="44"></div>
-            <div class="row"><div><label>Label spacing</label><div class="hint">(px)</div></div><input id="labelSpacing" type="number" min="0" max="6" step="0.1"></div>
           </div>
         </div>
       </div>
@@ -241,7 +244,6 @@
             <div class="row"><div><label>Pulse (lose)</label></div><input id="pulseLose" type="color"></div>
           </div>
         </div>
-        <div class="hint">Background/border are stored as RGBA strings (advanced). Defaults are fine.</div>
       </div>
 
       <div class="card wide">
@@ -336,7 +338,7 @@
           </div>
           <div>
             <div class="row"><div><label>Sparks</label></div><select id="sparksOn"><option value="false">Off</option><option value="true">On</option></select></div>
-            <div class="row"><div><label>Sparks amount</label></div><input id="sparksAmount" type="range" min="0" max="160" step="1"></div>
+            <div class="row"><div><label>Sparks amount</label></div><input id="sparksAmount" type="range" min="0" max="200" step="1"></div>
           </div>
         </div>
       </div>
@@ -383,18 +385,21 @@
 <script>
   const STORAGE_KEY = "dbd_widget_live";
 
-  // Must match overlay defaults (FX off by default)
   const DEFAULTS = {
     channel: "ghostephace",
     allowEveryone: false,
     scoreWin: 0,
     scoreLose: 0,
+
     visibility: "always",
-    showSeconds: 8,
-    hideInitially: true,
 
     layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
-    typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+    typography: {
+      fontChoice:"system",
+      customFont:"",
+      font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial",
+      numSize:86, numWeight:1000, labelSize:20, labelSpacing:1
+    },
     colors: {
       bg:"rgba(13,13,14,.78)",
       border:"rgba(255,255,255,.07)",
@@ -417,7 +422,7 @@
       vignette:.26,
       chromaPx:2,
       shakeOn:false,
-      sparksOn:false, sparksAmount:28,
+      sparksOn:false, sparksAmount:38,
 
       bloodOn:false,
       bloodColor:"#8b0000",
@@ -438,7 +443,9 @@
       leftIconData:"", rightIconData:"",
       leftTintOn:true, rightTintOn:true,
       leftTintColor:"#FF4500", rightTintColor:"#FF4500"
-    }
+    },
+
+    watermark: { text: "GHOSTEPHACE • DBD SCOREBOARD" }
   };
 
   const $ = (id) => document.getElementById(id);
@@ -480,18 +487,21 @@
   }
 
   function bind(){
-    // basics
     $("channel").value = state.channel;
     $("allowEveryone").value = String(state.allowEveryone);
-    $("visibility").value = state.visibility;
-    $("showSeconds").value = state.showSeconds;
-    $("hideInitially").value = String(state.hideInitially);
+    $("wmText").value = state.watermark?.text || DEFAULTS.watermark.text;
 
-    // score
     $("scoreWin").value = state.scoreWin;
     $("scoreLose").value = state.scoreLose;
 
-    // layout
+    $("fontChoice").value = state.typography.fontChoice || "system";
+    $("customFont").value = state.typography.customFont || "";
+
+    $("numSize").value = state.typography.numSize;
+    $("numWeight").value = state.typography.numWeight;
+    $("labelSize").value = state.typography.labelSize;
+    $("labelSpacing").value = state.typography.labelSpacing;
+
     $("w").value = state.layout.w;
     $("h").value = state.layout.h;
     $("scale").value = state.layout.scale;
@@ -501,13 +511,6 @@
     $("colW").value = state.layout.colW;
     $("padX").value = state.layout.padX;
 
-    // typography
-    $("numSize").value = state.typography.numSize;
-    $("numWeight").value = state.typography.numWeight;
-    $("labelSize").value = state.typography.labelSize;
-    $("labelSpacing").value = state.typography.labelSpacing;
-
-    // colors
     $("highlight").value = state.colors.highlight;
     $("textMain").value = state.colors.textMain;
     $("textSub").value = state.colors.textSub;
@@ -516,14 +519,12 @@
     $("pulseWin").value = state.colors.pulseWin;
     $("pulseLose").value = state.colors.pulseLose;
 
-    // spinner + glow
     $("spinnerOn").value = String(state.spinner.on);
     $("spinThick").value = state.spinner.thick;
     $("glowA").value = state.glow.a;
     $("glowB").value = state.glow.b;
     $("glowC").value = state.glow.c;
 
-    // icons
     $("leftLabel").value = state.textIcons.leftLabel;
     $("rightLabel").value = state.textIcons.rightLabel;
     $("leftIconMode").value = state.textIcons.leftIconMode;
@@ -535,7 +536,6 @@
     $("leftTintColor").value = state.textIcons.leftTintColor;
     $("rightTintColor").value = state.textIcons.rightTintColor;
 
-    // FX
     $("sheenOn").value = String(state.effects.sheenOn);
     $("sheenOpacity").value = state.effects.sheenOpacity;
     $("sheenSpeedSec").value = state.effects.sheenSpeedSec;
@@ -558,7 +558,6 @@
     $("sparksOn").value = String(state.effects.sparksOn);
     $("sparksAmount").value = state.effects.sparksAmount;
 
-    // embers
     $("emberEnabled").value = String(state.ember.enabled);
     $("emberOpacity").value = state.ember.opacity;
     $("emberSpeed").value = state.ember.speed;
@@ -567,7 +566,6 @@
     $("emberC2").value = state.ember.colors?.[1] || "#FFA500";
     $("emberC3").value = state.ember.colors?.[2] || "#bc2e9f";
 
-    // blood
     $("bloodOn").value = String(state.effects.bloodOn);
     $("bloodColor").value = state.effects.bloodColor;
     $("bloodOpacity").value = state.effects.bloodOpacity;
@@ -579,14 +577,15 @@
   }
 
   function wire(){
-    // basics
     $("channel").addEventListener("input", () => { state.channel = $("channel").value.trim() || "ghostephace"; saveState(); });
     $("allowEveryone").addEventListener("change", () => { state.allowEveryone = $("allowEveryone").value === "true"; saveState(); });
-    $("visibility").addEventListener("change", () => { state.visibility = $("visibility").value; saveState(); });
-    $("showSeconds").addEventListener("input", () => { state.showSeconds = clampInt($("showSeconds").value,2,30); saveState(); });
-    $("hideInitially").addEventListener("change", () => { state.hideInitially = $("hideInitially").value === "true"; saveState(); });
 
-    // score
+    $("wmText").addEventListener("input", () => {
+      state.watermark = state.watermark || {};
+      state.watermark.text = $("wmText").value.trim() || DEFAULTS.watermark.text;
+      saveState();
+    });
+
     $("btnReset").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
     $("btnWinPlus").addEventListener("click", () => { state.scoreWin = clampInt(state.scoreWin + 1); saveState(); bind(); });
     $("btnLosePlus").addEventListener("click", () => { state.scoreLose = clampInt(state.scoreLose + 1); saveState(); bind(); });
@@ -597,7 +596,14 @@
     });
     $("btnZero").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
 
-    // layout
+    $("fontChoice").addEventListener("change", () => { state.typography.fontChoice = $("fontChoice").value; saveState(); });
+    $("customFont").addEventListener("input", () => { state.typography.customFont = $("customFont").value; saveState(); });
+
+    $("numSize").addEventListener("change", () => { state.typography.numSize = clampInt($("numSize").value, 30, 140); saveState(); });
+    $("numWeight").addEventListener("change", () => { state.typography.numWeight = clampInt($("numWeight").value, 400, 1000); saveState(); });
+    $("labelSize").addEventListener("change", () => { state.typography.labelSize = clampInt($("labelSize").value, 10, 44); saveState(); });
+    $("labelSpacing").addEventListener("change", () => { state.typography.labelSpacing = parseFloat($("labelSpacing").value); saveState(); });
+
     $("w").addEventListener("change", () => { state.layout.w = clampInt($("w").value, 400, 2000); saveState(); });
     $("h").addEventListener("change", () => { state.layout.h = clampInt($("h").value, 120, 500); saveState(); });
     $("scale").addEventListener("input", () => { state.layout.scale = parseFloat($("scale").value); saveState(); });
@@ -607,13 +613,6 @@
     $("colW").addEventListener("change", () => { state.layout.colW = clampInt($("colW").value, 120, 300); saveState(); });
     $("padX").addEventListener("change", () => { state.layout.padX = clampInt($("padX").value, 0, 60); saveState(); });
 
-    // typography
-    $("numSize").addEventListener("change", () => { state.typography.numSize = clampInt($("numSize").value, 30, 140); saveState(); });
-    $("numWeight").addEventListener("change", () => { state.typography.numWeight = clampInt($("numWeight").value, 400, 1000); saveState(); });
-    $("labelSize").addEventListener("change", () => { state.typography.labelSize = clampInt($("labelSize").value, 10, 44); saveState(); });
-    $("labelSpacing").addEventListener("change", () => { state.typography.labelSpacing = parseFloat($("labelSpacing").value); saveState(); });
-
-    // colors
     $("highlight").addEventListener("change", () => { state.colors.highlight = $("highlight").value; saveState(); });
     $("textMain").addEventListener("change", () => { state.colors.textMain = $("textMain").value; saveState(); });
     $("textSub").addEventListener("change", () => { state.colors.textSub = $("textSub").value; saveState(); });
@@ -622,14 +621,12 @@
     $("pulseWin").addEventListener("change", () => { state.colors.pulseWin = $("pulseWin").value; saveState(); });
     $("pulseLose").addEventListener("change", () => { state.colors.pulseLose = $("pulseLose").value; saveState(); });
 
-    // spinner + glow
     $("spinnerOn").addEventListener("change", () => { state.spinner.on = $("spinnerOn").value === "true"; saveState(); });
     $("spinThick").addEventListener("input", () => { state.spinner.thick = parseInt($("spinThick").value,10); saveState(); });
     $("glowA").addEventListener("input", () => { state.glow.a = parseFloat($("glowA").value); saveState(); });
     $("glowB").addEventListener("input", () => { state.glow.b = parseFloat($("glowB").value); saveState(); });
     $("glowC").addEventListener("input", () => { state.glow.c = parseFloat($("glowC").value); saveState(); });
 
-    // icons
     $("leftLabel").addEventListener("input", () => { state.textIcons.leftLabel = $("leftLabel").value.trim() || "killed"; saveState(); });
     $("rightLabel").addEventListener("input", () => { state.textIcons.rightLabel = $("rightLabel").value.trim() || "failed"; saveState(); });
     $("leftIconMode").addEventListener("change", () => { state.textIcons.leftIconMode = $("leftIconMode").value; saveState(); });
@@ -659,7 +656,6 @@
       bind();
     });
 
-    // FX toggles
     $("sheenOn").addEventListener("change", () => { state.effects.sheenOn = $("sheenOn").value === "true"; saveState(); });
     $("sheenOpacity").addEventListener("input", () => { state.effects.sheenOpacity = parseFloat($("sheenOpacity").value); saveState(); });
     $("sheenSpeedSec").addEventListener("input", () => { state.effects.sheenSpeedSec = parseFloat($("sheenSpeedSec").value); saveState(); });
@@ -682,7 +678,6 @@
     $("sparksOn").addEventListener("change", () => { state.effects.sparksOn = $("sparksOn").value === "true"; saveState(); });
     $("sparksAmount").addEventListener("input", () => { state.effects.sparksAmount = parseInt($("sparksAmount").value,10); saveState(); });
 
-    // embers
     $("emberEnabled").addEventListener("change", () => { state.ember.enabled = $("emberEnabled").value === "true"; saveState(); });
     $("emberOpacity").addEventListener("input", () => { state.ember.opacity = parseFloat($("emberOpacity").value); saveState(); });
     $("emberSpeed").addEventListener("input", () => { state.ember.speed = parseFloat($("emberSpeed").value); saveState(); });
@@ -692,7 +687,6 @@
     $("emberC2").addEventListener("change", syncEmberColors);
     $("emberC3").addEventListener("change", syncEmberColors);
 
-    // blood
     $("bloodOn").addEventListener("change", () => { state.effects.bloodOn = $("bloodOn").value === "true"; saveState(); });
     $("bloodColor").addEventListener("change", () => { state.effects.bloodColor = $("bloodColor").value; saveState(); });
     $("bloodOpacity").addEventListener("input", () => { state.effects.bloodOpacity = parseFloat($("bloodOpacity").value); saveState(); });
