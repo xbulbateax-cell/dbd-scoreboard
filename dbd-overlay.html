@@ -1,818 +1,837 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dead By Daylight Scorboard Settings v5</title>
-  <style>
-    :root{
-      --bg0:#07080c; --bg1:#0b0c10;
-      --card: rgba(255,255,255,.06);
-      --border: rgba(255,255,255,.10);
-      --muted: rgba(255,255,255,.70);
-      --muted2: rgba(255,255,255,.55);
-      --pink:#f2b7e6;
-      --pill: rgba(160,160,190,.25);
-      --shadow: 0 18px 60px rgba(0,0,0,.45);
-      --shadow2: 0 10px 35px rgba(0,0,0,.35);
-      --radius: 22px;
-    }
-    html,body{
-      margin:0;
-      background:
-        radial-gradient(1100px 700px at 30% 20%, rgba(255,74,24,.10), transparent 60%),
-        radial-gradient(900px 600px at 70% 40%, rgba(120,160,255,.10), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      color:#e9e9e9;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
-    .wrap{ min-height:100vh; display:grid; place-items:center; padding: 26px 16px 44px; }
-    .container{ width: min(1180px, 100%); display:grid; gap: 14px; }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>DBD Scoreboard Overlay</title>
+<style>
+  :root{
+    --scale: 1;
+    --w: 980px;
+    --h: 170px;
+    --radius: 999px;
 
-    .hero{
-      position: relative; border-radius: 34px;
-      background: linear-gradient(90deg, rgba(190,170,255,.22), rgba(160,220,255,.14));
-      box-shadow: var(--shadow); padding: 22px 22px 18px; overflow:hidden; text-align:center;
-    }
-    .hero::before{
-      content:""; position:absolute; inset:-60px;
-      background:
-        radial-gradient(900px 300px at 25% 70%, rgba(255,74,24,.18), transparent 60%),
-        radial-gradient(700px 260px at 70% 40%, rgba(255,255,255,.10), transparent 60%);
-      filter: blur(18px); opacity: .9; pointer-events:none;
-    }
-    .heroInner{ position:relative; z-index:2; }
-    .heroTitle{ margin:0; font-size: clamp(34px, 5vw, 62px); font-weight: 1000; letter-spacing: .6px; text-shadow: 0 10px 26px rgba(0,0,0,.35); }
-    .heroSub{ margin-top: 6px; font-size: 22px; letter-spacing: 2px; font-weight: 1000; color: var(--pink); text-transform: uppercase; text-shadow: 0 8px 18px rgba(0,0,0,.25); }
+    --padX: 18px;
+    --colW: 175px;
+    --gap: 12px;
 
-    .grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+    --circle: 140px;
+    --icon: 56px;
+    --stackGap: 4px;
 
-    .card{
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow2);
-      backdrop-filter: blur(8px);
-    }
-    .chip{
-      display:inline-flex; align-items:center; gap: 10px;
-      padding: 10px 14px; border-radius: 999px;
-      background: var(--pill);
-      border: 1px solid rgba(255,255,255,.10);
-      margin-bottom: 8px;
-    }
-    .skull{
-      width: 28px; height: 28px; display:grid; place-items:center;
-      border-radius: 999px; background: rgba(0,0,0,.32);
-      border: 1px solid rgba(255,255,255,.08);
-      font-size: 16px;
-    }
-    .card h2{ margin:0; font-size: 18px; font-weight: 1000; letter-spacing: .3px; }
+    --bg: rgba(13,13,14,.78);
+    --border: rgba(255,255,255,.07);
+    --textMain: #efefef;
+    --textSub: #c0c0c0;
+    --highlight: #ff4500;
 
-    .row{
-      display:grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items:center;
-      margin: 10px 0;
-    }
-    label{ color: rgba(255,255,255,.90); font-weight: 800; }
-    .hint{ color: var(--muted2); font-size: 12px; margin-top: 2px; }
+    --numSize: 86px;
+    --numWeight: 1000;
+    --labelSize: 20px;
+    --labelSpacing: 1px;
 
-    input[type="text"], input[type="number"], select, textarea{
-      width: 360px; max-width: 100%;
-      padding: 10px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.32);
-      color: #fff;
-      outline: none;
-    }
-    textarea{ min-height: 110px; resize: vertical; }
-    input[type="number"]{ width: 140px; }
-    input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus{
-      border-color: rgba(242,183,230,.55);
-      box-shadow: 0 0 0 3px rgba(242,183,230,.18);
-    }
-    input[type="color"]{ width: 58px; height: 40px; border-radius: 12px; border: none; background: transparent; padding: 0; }
-    input[type="range"]{ width: 360px; max-width:100%; }
-    input[type="file"]{ width: 360px; max-width: 100%; }
+    --glowA: .45; --glowB: .45; --glowC: .22;
 
-    .btns{ display:flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    button{
-      padding: 10px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: rgba(255,255,255,.10);
-      color:#fff;
-      font-weight: 900;
-      cursor:pointer;
-    }
-    button:hover{ background: rgba(255,255,255,.14); }
+    --spinThick: 3;
+    --spinWin: #00ff00;
+    --spinLose: #00ff00;
+    --pulseWin: #ffff00;
+    --pulseLose: #ffff00;
 
-    .wide{ grid-column: 1 / -1; }
-    .split{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 980px){ .split{ grid-template-columns:1fr; } }
+    --sheenOpacity: .35;
+    --sheenSpeed: 3.2s;
 
-    code{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      background: rgba(0,0,0,.35);
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
-    }
-    hr{ border:none; border-top:1px solid rgba(255,255,255,.12); margin: 14px 0; }
-  </style>
+    --scanOpacity: .14;
+    --scanStep: 6px;
+
+    --grainOpacity: .12;
+    --grainSize: 120px;
+
+    --vignette: .26;
+
+    --chroma: 2px; /* 0px turns it off */
+
+    --emberOpacity: .50;
+    --emberSpeed: .60;
+
+    --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  }
+
+  html,body{ margin:0; width:100%; height:100%; background:transparent; overflow:hidden; }
+  body{ font-family: var(--font); }
+  .stage{ width:100%; height:100%; display:grid; place-items:center; }
+
+  .widget{
+    position:relative;
+    width: var(--w);
+    height: var(--h);
+    border-radius: var(--radius);
+    background: var(--bg);
+    transform: scale(var(--scale));
+    box-shadow: inset 0 0 0 2px var(--border), 0 18px 60px rgba(0,0,0,.45);
+    overflow:hidden;
+    opacity: 1;
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .widget.hidden{ opacity:0; pointer-events:none; transform: scale(calc(var(--scale)*.985)); }
+
+  /* canvases */
+  #embers,#sparks{
+    position:absolute; inset:0;
+    pointer-events:none;
+    z-index:1;
+    mix-blend-mode: screen;
+  }
+  #embers{ opacity: var(--emberOpacity); }
+  #sparks{ opacity: .95; }
+
+  /* Blood canvas */
+  #blood{
+    position:absolute; inset:0;
+    pointer-events:none;
+    z-index:2;
+    mix-blend-mode: multiply;
+  }
+
+  /* FX layers */
+  .fx{ position:absolute; inset:0; pointer-events:none; z-index:1; }
+  .fx.sheen{
+    opacity: var(--sheenOpacity);
+    background: linear-gradient(120deg, transparent 0%, color-mix(in srgb, var(--highlight) 22%, white) 20%,
+      transparent 45%, rgba(255,255,255,.10) 55%, transparent 75%, transparent 100%);
+    transform: translateX(-75%) skewX(-18deg);
+    animation: sheenMove var(--sheenSpeed) linear infinite;
+    mix-blend-mode: screen;
+    filter: blur(1px);
+  }
+  @keyframes sheenMove{ 0%{transform:translateX(-75%) skewX(-18deg)} 100%{transform:translateX(75%) skewX(-18deg)} }
+
+  .fx.scan{
+    opacity: var(--scanOpacity);
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px,
+      rgba(0,0,0,0) 3px, rgba(0,0,0,0) var(--scanStep));
+    mix-blend-mode: overlay;
+    animation: scanShift 6s linear infinite;
+  }
+  @keyframes scanShift{ 0%{transform:translateY(0)} 100%{transform:translateY(12px)} }
+
+  .fx.grain{
+    opacity: var(--grainOpacity);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.12) 0 1px, transparent 2px),
+      radial-gradient(circle at 70% 40%, rgba(255,255,255,.10) 0 1px, transparent 2px),
+      radial-gradient(circle at 40% 80%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+    background-size: var(--grainSize) var(--grainSize);
+    mix-blend-mode: overlay;
+    animation: grainJitter .55s steps(2,end) infinite;
+  }
+  @keyframes grainJitter{ 0%{transform:translate(0,0)} 25%{transform:translate(3px,-2px)} 50%{transform:translate(-2px,3px)} 75%{transform:translate(2px,2px)} 100%{transform:translate(-3px,-2px)} }
+
+  .fx.vignette{ opacity:.95; background: radial-gradient(closest-side, transparent 55%, rgba(0,0,0,var(--vignette)) 100%); }
+
+  .fx.chroma{
+    opacity:.9; mix-blend-mode: screen;
+    filter: blur(.2px);
+    animation: chromaFlicker 2.8s steps(2,end) infinite;
+  }
+  @keyframes chromaFlicker{
+    0%,100%{ transform: translate(0,0); filter: drop-shadow(var(--chroma) 0 rgba(255,0,0,.25)) drop-shadow(calc(var(--chroma) * -1) 0 rgba(0,200,255,.20)); }
+    50%{ transform: translate(calc(var(--chroma) * .25), calc(var(--chroma) * -.15)); }
+  }
+
+  /* content */
+  .row{
+    position:relative; z-index:3;
+    height:100%;
+    display:grid;
+    grid-template-columns: var(--colW) 1fr var(--colW);
+    align-items:center;
+    padding: 0 var(--padX);
+    gap: var(--gap);
+  }
+
+  .circle{
+    position:relative;
+    width: var(--circle); height: var(--circle);
+    border-radius: 999px;
+    background: rgba(0,0,0,.65);
+    display:grid; place-items:center;
+    box-shadow:
+      inset 0 0 0 3px color-mix(in srgb, var(--highlight) calc(var(--glowA) * 100%), transparent),
+      0 0 18px color-mix(in srgb, var(--highlight) calc(var(--glowB) * 100%), transparent),
+      0 0 40px color-mix(in srgb, var(--highlight) calc(var(--glowC) * 100%), transparent);
+    user-select:none; overflow:hidden;
+  }
+
+  .ring{
+    position:absolute; inset:-6px;
+    border-radius:999px;
+    pointer-events:none;
+    border: var(--spinThick) solid transparent;
+    mask: radial-gradient(transparent 58px, #000 59px);
+    opacity: .95;
+    animation: spin 1.1s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .ring.win{ border-top-color: var(--spinWin); border-right-color: color-mix(in srgb, var(--spinWin) 55%, transparent); }
+  .ring.lose{ border-top-color: var(--spinLose); border-right-color: color-mix(in srgb, var(--spinLose) 55%, transparent); }
+
+  .pulseGlow{ position:absolute; inset:0; border-radius:999px; pointer-events:none; opacity:0; }
+
+  .stack{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap: var(--stackGap); transform: translateY(2px); }
+  .icon{ width: var(--icon); height: var(--icon); display:grid; place-items:center; }
+  .icon img{ width: var(--icon); height: var(--icon); object-fit:contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px color-mix(in srgb, var(--highlight) 35%, transparent)); }
+  .iconMask{
+    width: var(--icon); height: var(--icon);
+    background: var(--highlight);
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.45)) drop-shadow(0 0 10px color-mix(in srgb, var(--highlight) 35%, transparent));
+    -webkit-mask-repeat:no-repeat; -webkit-mask-position:center; -webkit-mask-size:contain;
+    mask-repeat:no-repeat; mask-position:center; mask-size:contain;
+  }
+  .icon svg{ width: var(--icon); height: var(--icon); color: var(--highlight); }
+
+  .label{
+    font-weight: 900;
+    letter-spacing: var(--labelSpacing);
+    text-transform: uppercase;
+    color: var(--textSub);
+    font-size: var(--labelSize);
+    line-height: 1;
+    margin: 0;
+    text-shadow: 0 6px 16px rgba(0,0,0,.35);
+  }
+
+  .center{
+    display:grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items:center; justify-items:center;
+    gap: 20px;
+  }
+  .num{
+    font-size: var(--numSize);
+    font-weight: var(--numWeight);
+    color: var(--textMain);
+    min-width: 110px;
+    text-align:center;
+    text-shadow: 0 10px 26px rgba(0,0,0,.5);
+    user-select:none;
+  }
+  .dash{
+    width: 68px; height: 18px; border-radius:999px;
+    background: linear-gradient(90deg, var(--highlight), color-mix(in srgb, var(--highlight) 55%, white));
+    box-shadow: 0 0 24px color-mix(in srgb, var(--highlight) 40%, transparent);
+    transform: translateY(6px);
+  }
+
+  /* punch */
+  .pop{ animation: pop .18s ease-out, punchGlow .42s ease-out; }
+  @keyframes pop{ 0%{transform:scale(1)} 55%{transform:scale(1.09)} 100%{transform:scale(1)} }
+  @keyframes punchGlow{
+    0%{ filter: drop-shadow(0 0 0 transparent); }
+    55%{ filter: drop-shadow(0 0 18px color-mix(in srgb, var(--highlight) 55%, transparent)); }
+    100%{ filter: drop-shadow(0 0 0 transparent); }
+  }
+  .widget.shake{ animation: shake .22s ease-out; }
+  @keyframes shake{
+    0%{ transform: scale(var(--scale)) translate(0,0); }
+    20%{ transform: scale(var(--scale)) translate(2px,-1px); }
+    40%{ transform: scale(var(--scale)) translate(-2px,1px); }
+    60%{ transform: scale(var(--scale)) translate(2px,1px); }
+    80%{ transform: scale(var(--scale)) translate(-1px,-2px); }
+    100%{ transform: scale(var(--scale)) translate(0,0); }
+  }
+
+  .version{
+    position:absolute; right:12px; bottom:10px;
+    font-size: 11px; letter-spacing: .9px;
+    color: rgba(255,255,255,.45);
+    text-transform: uppercase;
+    z-index: 4;
+    user-select:none;
+  }
+  .off{ display:none !important; }
+</style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="container">
-      <div class="hero">
-        <div class="heroInner">
-          <h1 class="heroTitle">DBD Scoreboard</h1>
-          <div class="heroSub">Settings v5 (Nasty Mode)</div>
+<div class="stage">
+  <div id="widget" class="widget">
+    <canvas id="embers"></canvas>
+    <canvas id="sparks"></canvas>
+    <canvas id="blood"></canvas>
+
+    <div id="fxSheen" class="fx sheen"></div>
+    <div id="fxScan" class="fx scan"></div>
+    <div id="fxGrain" class="fx grain"></div>
+    <div id="fxVignette" class="fx vignette"></div>
+    <div id="fxChroma" class="fx chroma"></div>
+
+    <div class="row">
+      <div class="circle">
+        <div id="winRing" class="ring win"></div>
+        <div id="winGlow" class="pulseGlow"></div>
+        <div class="stack">
+          <div id="leftIcon" class="icon"></div>
+          <div id="leftLabel" class="label">KILLED</div>
         </div>
       </div>
 
-      <div class="grid">
+      <div class="center">
+        <div id="winNum" class="num">0</div>
+        <div class="dash"></div>
+        <div id="loseNum" class="num">0</div>
+      </div>
 
-        <div class="card">
-          <div class="chip"><div class="skull">💀</div><h2>Basics</h2></div>
-
-          <div class="row">
-            <div>
-              <label>Twitch Channel</label>
-              <div class="hint">Used for chat commands: !dbdwin / !dbdlose / !dbdreset</div>
-            </div>
-            <input id="channel" type="text" placeholder="ghostephace">
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Who can use commands?</label>
-              <div class="hint">Keep “Mods only” so randoms can’t mess your scores</div>
-            </div>
-            <select id="allowEveryone">
-              <option value="false">Broadcaster/Mods only</option>
-              <option value="true">Everyone</option>
-            </select>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Visibility</label>
-              <div class="hint">Always show OR only show when commands happen</div>
-            </div>
-            <select id="visibility">
-              <option value="always">Always</option>
-              <option value="command">Command mode</option>
-            </select>
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Show seconds (command mode)</label>
-              <div class="hint">How long it stays visible after a score update</div>
-            </div>
-            <input id="showSeconds" type="range" min="2" max="30" step="1">
-          </div>
-
-          <div class="row">
-            <div>
-              <label>Hide initially (command mode)</label>
-              <div class="hint">Start hidden and only appear on commands</div>
-            </div>
-            <select id="hideInitially">
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          </div>
-
-          <div class="btns">
-            <button id="btnShow">Show Now</button>
-            <button id="btnHide">Hide Now</button>
-            <button id="btnReset">Reset Scores</button>
-          </div>
-
-          <div class="hint" style="margin-top:10px;">
-            Chat: <code>!dbdwin</code> <code>!dbdlose</code> <code>!dbdreset</code> <code>!dbdset 3 2</code>
-          </div>
+      <div class="circle">
+        <div id="loseRing" class="ring lose"></div>
+        <div id="loseGlow" class="pulseGlow"></div>
+        <div class="stack">
+          <div id="rightIcon" class="icon"></div>
+          <div id="rightLabel" class="label">FAILED</div>
         </div>
-
-        <div class="card">
-          <div class="chip"><div class="skull">💀</div><h2>Score Test</h2></div>
-
-          <div class="row">
-            <div><label>Win score</label></div>
-            <input id="scoreWin" type="number" min="0" max="99">
-          </div>
-          <div class="row">
-            <div><label>Lose score</label></div>
-            <input id="scoreLose" type="number" min="0" max="99">
-          </div>
-
-          <div class="btns">
-            <button id="btnWinPlus">Win +1</button>
-            <button id="btnLosePlus">Lose +1</button>
-            <button id="btnApplyScores">Apply</button>
-            <button id="btnHardZero">Zero</button>
-          </div>
-
-          <div class="hint" style="margin-top:10px;">
-            If this updates here but not in Streamlabs overlay: change the overlay URL version param (cache-buster).
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Layout</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row"><label>Width</label><input id="w" type="range" min="700" max="1500" step="1"></div>
-              <div class="row"><label>Height</label><input id="h" type="range" min="130" max="260" step="1"></div>
-              <div class="row"><label>Scale</label><input id="scale" type="range" min="0.6" max="1.8" step="0.01"></div>
-              <div class="row"><label>Corner radius</label><input id="radius" type="range" min="40" max="999" step="1"></div>
-              <div class="row"><label>Side column width</label><input id="colW" type="range" min="120" max="260" step="1"></div>
-            </div>
-
-            <div>
-              <div class="row"><label>Padding X</label><input id="padX" type="range" min="0" max="60" step="1"></div>
-              <div class="row"><label>Gap</label><input id="gap" type="range" min="0" max="40" step="1"></div>
-              <div class="row"><label>Circle size</label><input id="circle" type="range" min="100" max="200" step="1"></div>
-              <div class="row"><label>Icon size</label><input id="icon" type="range" min="32" max="90" step="1"></div>
-              <div class="row"><label>Icon/label gap</label><input id="stackGap" type="range" min="0" max="20" step="1"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Typography</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row">
-                <div>
-                  <label>Font family</label>
-                  <div class="hint">Works best when hosted (GitHub Pages). Example: Inter, Arial</div>
-                </div>
-                <input id="font" type="text" placeholder="ui-sans-serif, system-ui, ...">
-              </div>
-
-              <div class="row"><label>Number size</label><input id="numSize" type="range" min="50" max="130" step="1"></div>
-              <div class="row"><label>Number weight</label><input id="numWeight" type="range" min="400" max="1000" step="50"></div>
-            </div>
-
-            <div>
-              <div class="row"><label>Label size</label><input id="labelSize" type="range" min="12" max="36" step="1"></div>
-              <div class="row"><label>Label letter spacing</label><input id="labelSpacing" type="range" min="0" max="6" step="0.1"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Colors & Glow</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row"><label>Background (rgba)</label><input id="bg" type="text" placeholder="rgba(13, 13, 14, 0.75)"></div>
-              <div class="row"><label>Border</label><input id="border" type="text" placeholder="rgba(255,255,255,.06)"></div>
-
-              <div class="row"><label>Main text</label><input id="textMain" type="color"></div>
-              <div class="row"><label>Secondary text</label><input id="textSub" type="color"></div>
-              <div class="row"><label>Highlight</label><input id="highlight" type="color"></div>
-            </div>
-
-            <div>
-              <div class="row"><label>Glow inner</label><input id="glowA" type="range" min="0" max="1" step="0.01"></div>
-              <div class="row"><label>Glow mid</label><input id="glowB" type="range" min="0" max="1" step="0.01"></div>
-              <div class="row"><label>Glow outer</label><input id="glowC" type="range" min="0" max="1" step="0.01"></div>
-            </div>
-          </div>
-
-          <hr>
-
-          <div class="split">
-            <div>
-              <div class="row"><label>Win spinner color</label><input id="spinWin" type="color"></div>
-              <div class="row"><label>Lose spinner color</label><input id="spinLose" type="color"></div>
-              <div class="row"><label>Spinner thickness</label><input id="spinThick" type="range" min="1" max="10" step="1"></div>
-              <div class="row">
-                <div><label>Spinner enabled</label></div>
-                <select id="spinnerOn"><option value="true">On</option><option value="false">Off</option></select>
-              </div>
-            </div>
-
-            <div>
-              <div class="row"><label>Win pulse color</label><input id="pulseWin" type="color"></div>
-              <div class="row"><label>Lose pulse color</label><input id="pulseLose" type="color"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Icons (Upload + Tint)</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row"><label>Left label</label><input id="leftLabel" type="text"></div>
-              <div class="row">
-                <div><label>Left icon mode</label></div>
-                <select id="leftIconMode">
-                  <option value="svg">SVG</option>
-                  <option value="upload">Upload PNG</option>
-                </select>
-              </div>
-              <div class="row">
-                <div><label>Left SVG</label></div>
-                <select id="leftIconSvg">
-                  <option value="trophy">trophy</option>
-                  <option value="skull">skull</option>
-                  <option value="exit">exit</option>
-                  <option value="sad">sad</option>
-                </select>
-              </div>
-              <div class="row"><label>Left PNG upload</label><input id="leftFile" type="file" accept="image/png"></div>
-              <div class="row">
-                <div><label>Left tint</label></div>
-                <select id="leftTintOn"><option value="true">On</option><option value="false">Off</option></select>
-              </div>
-              <div class="row"><label>Left tint color</label><input id="leftTintColor" type="color"></div>
-            </div>
-
-            <div>
-              <div class="row"><label>Right label</label><input id="rightLabel" type="text"></div>
-              <div class="row">
-                <div><label>Right icon mode</label></div>
-                <select id="rightIconMode">
-                  <option value="svg">SVG</option>
-                  <option value="upload">Upload PNG</option>
-                </select>
-              </div>
-              <div class="row">
-                <div><label>Right SVG</label></div>
-                <select id="rightIconSvg">
-                  <option value="sad">sad</option>
-                  <option value="skull">skull</option>
-                  <option value="exit">exit</option>
-                  <option value="trophy">trophy</option>
-                </select>
-              </div>
-              <div class="row"><label>Right PNG upload</label><input id="rightFile" type="file" accept="image/png"></div>
-              <div class="row">
-                <div><label>Right tint</label></div>
-                <select id="rightTintOn"><option value="true">On</option><option value="false">Off</option></select>
-              </div>
-              <div class="row"><label>Right tint color</label><input id="rightTintColor" type="color"></div>
-            </div>
-          </div>
-
-          <div class="hint" style="margin-top:10px;">
-            Upload saves in the browser storage of whatever app you’re editing in (Streamlabs vs Chrome are separate).
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Effects (Nasty)</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row"><div><label>Sheen</label></div><select id="sheenOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Sheen opacity</label><input id="sheenOpacity" type="range" min="0" max="1" step="0.01"></div>
-              <div class="row"><label>Sheen speed (sec)</label><input id="sheenSpeedSec" type="range" min="1" max="10" step="0.1"></div>
-
-              <hr>
-
-              <div class="row"><div><label>Scanlines</label></div><select id="scanOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Scan opacity</label><input id="scanOpacity" type="range" min="0" max="0.6" step="0.01"></div>
-              <div class="row"><label>Scan spacing</label><input id="scanStep" type="range" min="3" max="14" step="1"></div>
-            </div>
-
-            <div>
-              <div class="row"><div><label>Grain</label></div><select id="grainOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Grain opacity</label><input id="grainOpacity" type="range" min="0" max="0.6" step="0.01"></div>
-              <div class="row"><label>Grain size</label><input id="grainSize" type="range" min="60" max="240" step="1"></div>
-
-              <hr>
-
-              <div class="row"><div><label>Vignette</label></div><select id="vignetteOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Vignette strength</label><input id="vignette" type="range" min="0" max="0.8" step="0.01"></div>
-            </div>
-          </div>
-
-          <hr>
-
-          <div class="split">
-            <div>
-              <div class="row"><div><label>Chroma glitch</label></div><select id="chromaOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Chroma px</label><input id="chromaPx" type="range" min="0" max="8" step="1"></div>
-
-              <div class="row"><div><label>Shake on score</label></div><select id="shakeOn"><option value="true">On</option><option value="false">Off</option></select></div>
-            </div>
-
-            <div>
-              <div class="row"><div><label>Sparks burst</label></div><select id="sparksOn"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Sparks amount</label><input id="sparksAmount" type="range" min="0" max="120" step="1"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">💀</div><h2>Embers</h2></div>
-
-          <div class="split">
-            <div>
-              <div class="row"><div><label>Enabled</label></div><select id="emberEnabled"><option value="true">On</option><option value="false">Off</option></select></div>
-              <div class="row"><label>Opacity</label><input id="emberOpacity" type="range" min="0" max="1" step="0.01"></div>
-              <div class="row"><label>Speed</label><input id="emberSpeed" type="range" min="0.1" max="2" step="0.01"></div>
-              <div class="row"><label>Density target</label><input id="emberTarget" type="range" min="0" max="160" step="1"></div>
-            </div>
-
-            <div>
-              <div class="row"><label>Ember Color 1</label><input id="emberC1" type="color"></div>
-              <div class="row"><label>Ember Color 2</label><input id="emberC2" type="color"></div>
-              <div class="row"><label>Ember Color 3</label><input id="emberC3" type="color"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="card wide">
-          <div class="chip"><div class="skull">🧪</div><h2>Export / Import</h2></div>
-          <div class="row">
-            <div>
-              <label>Settings JSON</label>
-              <div class="hint">Copy/paste this between machines or share with friends.</div>
-            </div>
-            <textarea id="jsonBox" placeholder="Click Export…"></textarea>
-          </div>
-          <div class="btns">
-            <button id="btnExport">Export</button>
-            <button id="btnImport">Import</button>
-            <button id="btnFactory">Factory Reset</button>
-          </div>
-        </div>
-
       </div>
     </div>
+
+    <div class="version">LIVE • v5.3 (BLOOD)</div>
   </div>
+</div>
 
-  <script>
-    const STORAGE_KEY = "dbd_widget_v5";
-    const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("dbd_widget_channel_v5") : null;
+<script src="https://unpkg.com/tmi.js@1.8.5/dist/tmi.min.js"></script>
+<script>
+  const STORAGE_KEY = "dbd_widget_live";
 
-    const DEFAULTS = {
-      channel: "ghostephace",
-      allowEveryone: false,
+  const DEFAULTS = {
+    channel: "ghostephace",
+    allowEveryone: false,
+    scoreWin: 0,
+    scoreLose: 0,
+    visibility: "always",
+    showSeconds: 8,
+    hideInitially: true,
 
-      scoreWin: 0,
-      scoreLose: 0,
+    layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
+    typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+    colors: {
+      bg:"rgba(13,13,14,.78)", border:"rgba(255,255,255,.07)",
+      textMain:"#EFEFEF", textSub:"#C0C0C0", highlight:"#FF4500",
+      spinWin:"#00FF00", spinLose:"#00FF00", pulseWin:"#FFFF00", pulseLose:"#FFFF00"
+    },
+    glow: { a:.45, b:.45, c:.22 },
+    spinner: { on:true, thick:3 },
 
-      visibility: "always",
-      showSeconds: 8,
-      hideInitially: true,
+    effects: {
+      sheenOn:true, scanOn:true, grainOn:true, vignetteOn:true, chromaOn:true,
+      sheenOpacity:.35, sheenSpeedSec:3.2,
+      scanOpacity:.14, scanStep:6,
+      grainOpacity:.12, grainSize:120,
+      vignette:.26,
+      chromaPx:2,
+      shakeOn:true,
 
-      layout: { w:980, h:170, scale:1, radius:999, padX:18, colW:175, gap:12, circle:140, icon:56, stackGap:4 },
+      sparksOn:true, sparksAmount:28,
 
-      typography: { font:"ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", numSize:86, numWeight:1000, labelSize:20, labelSpacing:1 },
+      /* 🩸 BLOOD DRIP SETTINGS */
+      bloodOn: true,
+      bloodColor: "#8b0000",
+      bloodOpacity: 0.85,
+      bloodRate: 0.55,
+      bloodSpeed: 1.05,
+      bloodLength: 0.75,
+      bloodThickness: 0.70,
+      bloodWobble: 0.60
+    },
 
-      colors: {
-        bg:"rgba(13, 13, 14, 0.75)",
-        border:"rgba(255,255,255,.06)",
-        textMain:"#EFEFEF",
-        textSub:"#C0C0C0",
-        highlight:"#FF4500",
-        spinWin:"#00FF00",
-        spinLose:"#00FF00",
-        pulseWin:"#FFFF00",
-        pulseLose:"#FFFF00"
-      },
+    ember: { enabled:true, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:.50, speed:.60, targetCount:70 },
 
-      glow: { a:0.45, b:0.45, c:0.22 },
+    textIcons: {
+      leftLabel:"killed", rightLabel:"failed",
+      leftIconMode:"svg", rightIconMode:"svg",
+      leftIconSvg:"trophy", rightIconSvg:"sad",
+      leftIconData:"", rightIconData:"",
+      leftTintOn:true, rightTintOn:true,
+      leftTintColor:"#FF4500", rightTintColor:"#FF4500"
+    }
+  };
 
-      spinner: { on:true, thick:3 },
+  const $ = (id) => document.getElementById(id);
+  const widgetEl = $("widget");
 
-      effects: {
-        sheenOn:true, sheenOpacity:0.35, sheenSpeedSec:3.2,
-        scanOn:true, scanOpacity:0.16, scanStep:6,
-        grainOn:true, grainOpacity:0.14, grainSize:120,
-        vignetteOn:true, vignette:0.28,
-        chromaOn:true, chromaPx:2,
-        shakeOn:true,
-        sparksOn:true, sparksAmount:26
-      },
+  const winNumEl = $("winNum"), loseNumEl = $("loseNum");
+  const leftLabelEl = $("leftLabel"), rightLabelEl = $("rightLabel");
+  const leftIconEl = $("leftIcon"), rightIconEl = $("rightIcon");
+  const winGlowEl = $("winGlow"), loseGlowEl = $("loseGlow");
+  const winRingEl = $("winRing"), loseRingEl = $("loseRing");
 
-      ember: { enabled:true, colors:["#bc2e9f","#FFA500","#bc2e9f"], opacity:0.5, speed:0.6, targetCount:70 },
+  const fxSheen = $("fxSheen"), fxScan = $("fxScan"), fxGrain = $("fxGrain"), fxVignette = $("fxVignette"), fxChroma = $("fxChroma");
 
-      textIcons: {
-        leftLabel:"killed", rightLabel:"failed",
-        leftIconMode:"svg", rightIconMode:"svg",
-        leftIconSvg:"trophy", rightIconSvg:"sad",
-        leftIconData:"", rightIconData:"",
-        leftTintOn:true, rightTintOn:true,
-        leftTintColor:"#FF4500", rightTintColor:"#FF4500"
+  function deepMerge(base, patch){
+    const out = { ...base };
+    for(const k of Object.keys(patch || {})){
+      const v = patch[k];
+      if(v && typeof v === "object" && !Array.isArray(v)) out[k] = deepMerge(base[k] || {}, v);
+      else out[k] = v;
+    }
+    return out;
+  }
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return structuredClone(DEFAULTS);
+      return deepMerge(structuredClone(DEFAULTS), JSON.parse(raw));
+    } catch { return structuredClone(DEFAULTS); }
+  }
+
+  let state = loadState();
+  function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+  function clamp(n, min=0, max=99){
+    n = Number(n);
+    if(!Number.isFinite(n)) n = 0;
+    return Math.max(min, Math.min(max, Math.round(n)));
+  }
+
+  function hexToRgba(hex, a){
+    if(!hex) return `rgba(255,255,255,${a})`;
+    if(hex.startsWith("rgba")) return hex;
+    if(hex.startsWith("rgb(")) return hex.replace("rgb(", "rgba(").replace(")", `, ${a})`);
+    const h = hex.replace("#","").trim();
+    if(h.length !== 6) return `rgba(255,255,255,${a})`;
+    const r = parseInt(h.slice(0,2),16);
+    const g = parseInt(h.slice(2,4),16);
+    const b = parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function setCSSVars(){
+    const r = document.documentElement.style;
+
+    r.setProperty("--scale", state.layout.scale);
+    r.setProperty("--w", state.layout.w + "px");
+    r.setProperty("--h", state.layout.h + "px");
+    r.setProperty("--radius", state.layout.radius + "px");
+    r.setProperty("--padX", state.layout.padX + "px");
+    r.setProperty("--colW", state.layout.colW + "px");
+    r.setProperty("--gap", state.layout.gap + "px");
+    r.setProperty("--circle", state.layout.circle + "px");
+    r.setProperty("--icon", state.layout.icon + "px");
+    r.setProperty("--stackGap", state.layout.stackGap + "px");
+
+    r.setProperty("--font", state.typography.font);
+    r.setProperty("--numSize", state.typography.numSize + "px");
+    r.setProperty("--numWeight", state.typography.numWeight);
+    r.setProperty("--labelSize", state.typography.labelSize + "px");
+    r.setProperty("--labelSpacing", state.typography.labelSpacing + "px");
+
+    r.setProperty("--bg", state.colors.bg);
+    r.setProperty("--border", state.colors.border);
+    r.setProperty("--textMain", state.colors.textMain);
+    r.setProperty("--textSub", state.colors.textSub);
+    r.setProperty("--highlight", state.colors.highlight);
+
+    r.setProperty("--glowA", state.glow.a);
+    r.setProperty("--glowB", state.glow.b);
+    r.setProperty("--glowC", state.glow.c);
+
+    r.setProperty("--spinThick", state.spinner.thick);
+    r.setProperty("--spinWin", state.colors.spinWin);
+    r.setProperty("--spinLose", state.colors.spinLose);
+    r.setProperty("--pulseWin", state.colors.pulseWin);
+    r.setProperty("--pulseLose", state.colors.pulseLose);
+
+    r.setProperty("--sheenOpacity", state.effects.sheenOpacity);
+    r.setProperty("--sheenSpeed", state.effects.sheenSpeedSec + "s");
+    r.setProperty("--scanOpacity", state.effects.scanOpacity);
+    r.setProperty("--scanStep", state.effects.scanStep + "px");
+    r.setProperty("--grainOpacity", state.effects.grainOpacity);
+    r.setProperty("--grainSize", state.effects.grainSize + "px");
+    r.setProperty("--vignette", state.effects.vignette);
+
+    r.setProperty("--chroma", state.effects.chromaOn ? (state.effects.chromaPx + "px") : "0px");
+
+    r.setProperty("--emberOpacity", state.ember.opacity);
+    r.setProperty("--emberSpeed", state.ember.speed);
+  }
+
+  function iconSVG(name){
+    const color = "currentColor";
+    if(name === "trophy") return `<svg viewBox="0 0 24 24" fill="none">
+      <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 6H4v2a4 4 0 0 0 4 4" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17 6h3v2a4 4 0 0 1-4 4" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+    if(name === "sad") return `<svg viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="2"/>
+      <path d="M9 10h.01M15 10h.01" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+      <path d="M9 17c1.5-1.5 4.5-1.5 6 0" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+    if(name === "skull") return `<svg viewBox="0 0 24 24" fill="none">
+      <path d="M12 3c-4.4 0-8 3.3-8 7.4 0 2.6 1.4 4.9 3.5 6.2V20c0 .6.4 1 1 1h1v-2h1v2h3v-2h1v2h1c.6 0 1-.4 1-1v-3.4c2.1-1.3 3.5-3.6 3.5-6.2C20 6.3 16.4 3 12 3Z"
+            stroke="${color}" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="9" cy="11" r="1.5" fill="${color}"/><circle cx="15" cy="11" r="1.5" fill="${color}"/>
+    </svg>`;
+    if(name === "exit") return `<svg viewBox="0 0 24 24" fill="none">
+      <path d="M10 17l5-5-5-5" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M15 12H3" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+      <path d="M21 4v16" stroke="${color}" stroke-width="2" stroke-linecap="round"/>
+    </svg>`;
+    return `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="2"/></svg>`;
+  }
+
+  function setIcon(el, mode, svgName, dataUrl, tintOn, tintColor){
+    el.innerHTML = "";
+    if(mode === "upload" && dataUrl){
+      if(tintOn){
+        const mask = document.createElement("div");
+        mask.className = "iconMask";
+        mask.style.background = tintColor || state.colors.highlight;
+        mask.style.webkitMaskImage = `url("${dataUrl}")`;
+        mask.style.maskImage = `url("${dataUrl}")`;
+        el.appendChild(mask);
+      } else {
+        const img = document.createElement("img");
+        img.alt = ""; img.src = dataUrl;
+        el.appendChild(img);
       }
-    };
-
-    const $ = (id) => document.getElementById(id);
-
-    function deepMerge(base, patch){
-      const out = { ...base };
-      for(const k of Object.keys(patch || {})){
-        const v = patch[k];
-        if(v && typeof v === "object" && !Array.isArray(v)) out[k] = deepMerge(base[k] || {}, v);
-        else out[k] = v;
-      }
-      return out;
+      return;
     }
+    el.innerHTML = iconSVG(svgName || "trophy");
+    const svg = el.querySelector("svg");
+    if(svg) svg.style.color = state.colors.highlight;
+  }
 
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return structuredClone(DEFAULTS);
-        return deepMerge(structuredClone(DEFAULTS), JSON.parse(raw));
-      } catch { return structuredClone(DEFAULTS); }
+  function render(){
+    leftLabelEl.textContent  = (state.textIcons.leftLabel  || "killed").toUpperCase();
+    rightLabelEl.textContent = (state.textIcons.rightLabel || "failed").toUpperCase();
+    winNumEl.textContent = state.scoreWin;
+    loseNumEl.textContent = state.scoreLose;
+
+    setIcon(leftIconEl, state.textIcons.leftIconMode, state.textIcons.leftIconSvg, state.textIcons.leftIconData,
+      state.textIcons.leftTintOn, state.textIcons.leftTintColor);
+    setIcon(rightIconEl, state.textIcons.rightIconMode, state.textIcons.rightIconSvg, state.textIcons.rightIconData,
+      state.textIcons.rightTintOn, state.textIcons.rightTintColor);
+
+    fxSheen.classList.toggle("off", !state.effects.sheenOn);
+    fxScan.classList.toggle("off", !state.effects.scanOn);
+    fxGrain.classList.toggle("off", !state.effects.grainOn);
+    fxVignette.classList.toggle("off", !state.effects.vignetteOn);
+    fxChroma.classList.toggle("off", !state.effects.chromaOn);
+
+    winRingEl.style.display = state.spinner.on ? "block" : "none";
+    loseRingEl.style.display = state.spinner.on ? "block" : "none";
+  }
+
+  // visibility
+  let hideTimer = null;
+  function showWidgetFor(seconds){
+    widgetEl.classList.remove("hidden");
+    clearTimeout(hideTimer);
+    if(state.visibility === "command"){
+      const ms = Math.max(1, seconds || state.showSeconds || 8) * 1000;
+      hideTimer = setTimeout(hideWidget, ms);
     }
+  }
+  function hideWidget(){ widgetEl.classList.add("hidden"); }
+  function applyVisibilityOnLoad(){
+    if(state.visibility === "always") widgetEl.classList.remove("hidden");
+    else (state.hideInitially ? hideWidget() : showWidgetFor(state.showSeconds));
+  }
 
-    let state = loadState();
+  // punch
+  function pop(el){ el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+  function doShake(){
+    if(!state.effects.shakeOn) return;
+    widgetEl.classList.remove("shake"); void widgetEl.offsetWidth; widgetEl.classList.add("shake");
+  }
+  function flashGlow(which){
+    const el = which === "win" ? winGlowEl : loseGlowEl;
+    const col = which === "win" ? state.colors.pulseWin : state.colors.pulseLose;
+    el.animate([
+      { opacity: 0, boxShadow:"0 0 0 0 transparent" },
+      { opacity: 1, boxShadow:`0 0 42px 12px ${hexToRgba(col,.60)}` },
+      { opacity: 0, boxShadow:"0 0 0 0 transparent" }
+    ], { duration: 480, easing:"ease-out" });
+  }
 
-    function saveState(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      bc?.postMessage({ type:"state", state });
-    }
+  // canvases
+  const embersCanvas = $("embers");
+  const ectx = embersCanvas.getContext("2d", { alpha:true });
+  const sparksCanvas = $("sparks");
+  const sctx = sparksCanvas.getContext("2d", { alpha:true });
 
-    function clamp(n, min=0, max=99){
-      n = Number(n);
-      if(!Number.isFinite(n)) n = 0;
-      return Math.max(min, Math.min(max, Math.round(n)));
-    }
+  const bloodCanvas = $("blood");
+  const bctx = bloodCanvas.getContext("2d", { alpha:true });
 
-    async function fileToDataUrl(file){
-      return new Promise((resolve, reject) => {
-        const fr = new FileReader();
-        fr.onload = () => resolve(fr.result);
-        fr.onerror = reject;
-        fr.readAsDataURL(file);
-      });
-    }
+  let embers = [];
+  let sparks = [];
+  let drips = [];
+  let bloodSpawnAcc = 0;
 
-    function bind(){
-      $("channel").value = state.channel;
-      $("allowEveryone").value = String(state.allowEveryone);
-      $("visibility").value = state.visibility;
-      $("showSeconds").value = state.showSeconds;
-      $("hideInitially").value = String(state.hideInitially);
+  let lastT = performance.now();
 
-      $("scoreWin").value = state.scoreWin;
-      $("scoreLose").value = state.scoreLose;
+  function resizeCanvases(){
+    const rect = widgetEl.getBoundingClientRect();
+    const w = Math.max(1, Math.floor(rect.width));
+    const h = Math.max(1, Math.floor(rect.height));
+    embersCanvas.width = w; embersCanvas.height = h;
+    sparksCanvas.width = w; sparksCanvas.height = h;
+    bloodCanvas.width = w;  bloodCanvas.height = h;
+  }
+  window.addEventListener("resize", resizeCanvases);
 
-      // layout
-      $("w").value = state.layout.w;
-      $("h").value = state.layout.h;
-      $("scale").value = state.layout.scale;
-      $("radius").value = state.layout.radius;
-      $("padX").value = state.layout.padX;
-      $("colW").value = state.layout.colW;
-      $("gap").value = state.layout.gap;
-      $("circle").value = state.layout.circle;
-      $("icon").value = state.layout.icon;
-      $("stackGap").value = state.layout.stackGap;
-
-      // typography
-      $("font").value = state.typography.font;
-      $("numSize").value = state.typography.numSize;
-      $("numWeight").value = state.typography.numWeight;
-      $("labelSize").value = state.typography.labelSize;
-      $("labelSpacing").value = state.typography.labelSpacing;
-
-      // colors/glow
-      $("bg").value = state.colors.bg;
-      $("border").value = state.colors.border;
-      $("textMain").value = state.colors.textMain;
-      $("textSub").value = state.colors.textSub;
-      $("highlight").value = state.colors.highlight;
-
-      $("glowA").value = state.glow.a;
-      $("glowB").value = state.glow.b;
-      $("glowC").value = state.glow.c;
-
-      $("spinWin").value = state.colors.spinWin;
-      $("spinLose").value = state.colors.spinLose;
-      $("spinThick").value = state.spinner.thick;
-      $("spinnerOn").value = String(state.spinner.on);
-
-      $("pulseWin").value = state.colors.pulseWin;
-      $("pulseLose").value = state.colors.pulseLose;
-
-      // icons
-      $("leftLabel").value = state.textIcons.leftLabel;
-      $("rightLabel").value = state.textIcons.rightLabel;
-      $("leftIconMode").value = state.textIcons.leftIconMode;
-      $("rightIconMode").value = state.textIcons.rightIconMode;
-      $("leftIconSvg").value = state.textIcons.leftIconSvg;
-      $("rightIconSvg").value = state.textIcons.rightIconSvg;
-      $("leftTintOn").value = String(state.textIcons.leftTintOn);
-      $("rightTintOn").value = String(state.textIcons.rightTintOn);
-      $("leftTintColor").value = state.textIcons.leftTintColor;
-      $("rightTintColor").value = state.textIcons.rightTintColor;
-
-      // effects
-      $("sheenOn").value = String(state.effects.sheenOn);
-      $("sheenOpacity").value = state.effects.sheenOpacity;
-      $("sheenSpeedSec").value = state.effects.sheenSpeedSec;
-
-      $("scanOn").value = String(state.effects.scanOn);
-      $("scanOpacity").value = state.effects.scanOpacity;
-      $("scanStep").value = state.effects.scanStep;
-
-      $("grainOn").value = String(state.effects.grainOn);
-      $("grainOpacity").value = state.effects.grainOpacity;
-      $("grainSize").value = state.effects.grainSize;
-
-      $("vignetteOn").value = String(state.effects.vignetteOn);
-      $("vignette").value = state.effects.vignette;
-
-      $("chromaOn").value = String(state.effects.chromaOn);
-      $("chromaPx").value = state.effects.chromaPx;
-
-      $("shakeOn").value = String(state.effects.shakeOn);
-
-      $("sparksOn").value = String(state.effects.sparksOn);
-      $("sparksAmount").value = state.effects.sparksAmount;
-
-      // embers
-      $("emberEnabled").value = String(state.ember.enabled);
-      $("emberOpacity").value = state.ember.opacity;
-      $("emberSpeed").value = state.ember.speed;
-      $("emberTarget").value = state.ember.targetCount;
-      $("emberC1").value = state.ember.colors[0];
-      $("emberC2").value = state.ember.colors[1];
-      $("emberC3").value = state.ember.colors[2];
-    }
-
-    function wire(){
-      // Basics
-      $("channel").addEventListener("input", () => { state.channel = $("channel").value.trim() || "ghostephace"; saveState(); });
-      $("allowEveryone").addEventListener("change", () => { state.allowEveryone = $("allowEveryone").value === "true"; saveState(); });
-      $("visibility").addEventListener("change", () => { state.visibility = $("visibility").value; saveState(); });
-      $("showSeconds").addEventListener("input", () => { state.showSeconds = clamp($("showSeconds").value,2,30); saveState(); });
-      $("hideInitially").addEventListener("change", () => { state.hideInitially = $("hideInitially").value === "true"; saveState(); });
-
-      $("btnShow").addEventListener("click", () => bc?.postMessage({type:"show"}));
-      $("btnHide").addEventListener("click", () => bc?.postMessage({type:"hide"}));
-      $("btnReset").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
-
-      // Score test
-      $("btnWinPlus").addEventListener("click", () => { state.scoreWin = clamp(state.scoreWin + 1); saveState(); bind(); });
-      $("btnLosePlus").addEventListener("click", () => { state.scoreLose = clamp(state.scoreLose + 1); saveState(); bind(); });
-      $("btnApplyScores").addEventListener("click", () => {
-        state.scoreWin = clamp($("scoreWin").value,0,99);
-        state.scoreLose = clamp($("scoreLose").value,0,99);
-        saveState();
-      });
-      $("btnHardZero").addEventListener("click", () => { state.scoreWin = 0; state.scoreLose = 0; saveState(); bind(); });
-
-      // layout
-      const bindRange = (id, fn) => $(id).addEventListener("input", () => { fn(); saveState(); });
-      bindRange("w", () => state.layout.w = clamp($("w").value,700,1500));
-      bindRange("h", () => state.layout.h = clamp($("h").value,130,260));
-      $("scale").addEventListener("input", () => { state.layout.scale = parseFloat($("scale").value); saveState(); });
-      bindRange("radius", () => state.layout.radius = clamp($("radius").value,40,999));
-      bindRange("padX", () => state.layout.padX = clamp($("padX").value,0,60));
-      bindRange("colW", () => state.layout.colW = clamp($("colW").value,120,260));
-      bindRange("gap", () => state.layout.gap = clamp($("gap").value,0,40));
-      bindRange("circle", () => state.layout.circle = clamp($("circle").value,100,200));
-      bindRange("icon", () => state.layout.icon = clamp($("icon").value,32,90));
-      bindRange("stackGap", () => state.layout.stackGap = clamp($("stackGap").value,0,20));
-
-      // typography
-      $("font").addEventListener("input", () => { state.typography.font = $("font").value.trim() || DEFAULTS.typography.font; saveState(); });
-      bindRange("numSize", () => state.typography.numSize = clamp($("numSize").value,50,130));
-      bindRange("numWeight", () => state.typography.numWeight = clamp($("numWeight").value,400,1000));
-      bindRange("labelSize", () => state.typography.labelSize = clamp($("labelSize").value,12,36));
-      $("labelSpacing").addEventListener("input", () => { state.typography.labelSpacing = parseFloat($("labelSpacing").value); saveState(); });
-
-      // colors/glow
-      $("bg").addEventListener("input", () => { state.colors.bg = $("bg").value.trim() || DEFAULTS.colors.bg; saveState(); });
-      $("border").addEventListener("input", () => { state.colors.border = $("border").value.trim() || DEFAULTS.colors.border; saveState(); });
-      $("textMain").addEventListener("change", () => { state.colors.textMain = $("textMain").value; saveState(); });
-      $("textSub").addEventListener("change", () => { state.colors.textSub = $("textSub").value; saveState(); });
-      $("highlight").addEventListener("change", () => {
-        state.colors.highlight = $("highlight").value;
-        // keep tint colors in sync if they feel highlight-y
-        state.textIcons.leftTintColor = state.textIcons.leftTintColor || state.colors.highlight;
-        state.textIcons.rightTintColor = state.textIcons.rightTintColor || state.colors.highlight;
-        saveState();
-        bind();
-      });
-
-      $("glowA").addEventListener("input", () => { state.glow.a = parseFloat($("glowA").value); saveState(); });
-      $("glowB").addEventListener("input", () => { state.glow.b = parseFloat($("glowB").value); saveState(); });
-      $("glowC").addEventListener("input", () => { state.glow.c = parseFloat($("glowC").value); saveState(); });
-
-      $("spinWin").addEventListener("change", () => { state.colors.spinWin = $("spinWin").value; saveState(); });
-      $("spinLose").addEventListener("change", () => { state.colors.spinLose = $("spinLose").value; saveState(); });
-      $("spinThick").addEventListener("input", () => { state.spinner.thick = clamp($("spinThick").value,1,10); saveState(); });
-      $("spinnerOn").addEventListener("change", () => { state.spinner.on = $("spinnerOn").value === "true"; saveState(); });
-
-      $("pulseWin").addEventListener("change", () => { state.colors.pulseWin = $("pulseWin").value; saveState(); });
-      $("pulseLose").addEventListener("change", () => { state.colors.pulseLose = $("pulseLose").value; saveState(); });
-
-      // icons
-      $("leftLabel").addEventListener("input", () => { state.textIcons.leftLabel = $("leftLabel").value.trim() || "killed"; saveState(); });
-      $("rightLabel").addEventListener("input", () => { state.textIcons.rightLabel = $("rightLabel").value.trim() || "failed"; saveState(); });
-
-      $("leftIconMode").addEventListener("change", () => { state.textIcons.leftIconMode = $("leftIconMode").value; saveState(); });
-      $("rightIconMode").addEventListener("change", () => { state.textIcons.rightIconMode = $("rightIconMode").value; saveState(); });
-      $("leftIconSvg").addEventListener("change", () => { state.textIcons.leftIconSvg = $("leftIconSvg").value; saveState(); });
-      $("rightIconSvg").addEventListener("change", () => { state.textIcons.rightIconSvg = $("rightIconSvg").value; saveState(); });
-
-      $("leftTintOn").addEventListener("change", () => { state.textIcons.leftTintOn = $("leftTintOn").value === "true"; saveState(); });
-      $("rightTintOn").addEventListener("change", () => { state.textIcons.rightTintOn = $("rightTintOn").value === "true"; saveState(); });
-      $("leftTintColor").addEventListener("change", () => { state.textIcons.leftTintColor = $("leftTintColor").value; saveState(); });
-      $("rightTintColor").addEventListener("change", () => { state.textIcons.rightTintColor = $("rightTintColor").value; saveState(); });
-
-      $("leftFile").addEventListener("change", async (e) => {
-        const f = e.target.files?.[0]; if(!f) return;
-        state.textIcons.leftIconData = await fileToDataUrl(f);
-        state.textIcons.leftIconMode = "upload";
-        saveState();
-        e.target.value = "";
-      });
-
-      $("rightFile").addEventListener("change", async (e) => {
-        const f = e.target.files?.[0]; if(!f) return;
-        state.textIcons.rightIconData = await fileToDataUrl(f);
-        state.textIcons.rightIconMode = "upload";
-        saveState();
-        e.target.value = "";
-      });
-
-      // effects
-      const bindBool = (id, path) => $(id).addEventListener("change", () => { path($(id).value === "true"); saveState(); });
-      bindBool("sheenOn", v => state.effects.sheenOn = v);
-      $("sheenOpacity").addEventListener("input", () => { state.effects.sheenOpacity = parseFloat($("sheenOpacity").value); saveState(); });
-      $("sheenSpeedSec").addEventListener("input", () => { state.effects.sheenSpeedSec = parseFloat($("sheenSpeedSec").value); saveState(); });
-
-      bindBool("scanOn", v => state.effects.scanOn = v);
-      $("scanOpacity").addEventListener("input", () => { state.effects.scanOpacity = parseFloat($("scanOpacity").value); saveState(); });
-      $("scanStep").addEventListener("input", () => { state.effects.scanStep = clamp($("scanStep").value,3,14); saveState(); });
-
-      bindBool("grainOn", v => state.effects.grainOn = v);
-      $("grainOpacity").addEventListener("input", () => { state.effects.grainOpacity = parseFloat($("grainOpacity").value); saveState(); });
-      $("grainSize").addEventListener("input", () => { state.effects.grainSize = clamp($("grainSize").value,60,240); saveState(); });
-
-      bindBool("vignetteOn", v => state.effects.vignetteOn = v);
-      $("vignette").addEventListener("input", () => { state.effects.vignette = parseFloat($("vignette").value); saveState(); });
-
-      bindBool("chromaOn", v => state.effects.chromaOn = v);
-      $("chromaPx").addEventListener("input", () => { state.effects.chromaPx = clamp($("chromaPx").value,0,8); saveState(); });
-
-      bindBool("shakeOn", v => state.effects.shakeOn = v);
-
-      bindBool("sparksOn", v => state.effects.sparksOn = v);
-      $("sparksAmount").addEventListener("input", () => { state.effects.sparksAmount = clamp($("sparksAmount").value,0,120); saveState(); });
-
-      // embers
-      bindBool("emberEnabled", v => state.ember.enabled = v);
-      $("emberOpacity").addEventListener("input", () => { state.ember.opacity = parseFloat($("emberOpacity").value); saveState(); });
-      $("emberSpeed").addEventListener("input", () => { state.ember.speed = parseFloat($("emberSpeed").value); saveState(); });
-      $("emberTarget").addEventListener("input", () => { state.ember.targetCount = clamp($("emberTarget").value,0,160); saveState(); });
-      $("emberC1").addEventListener("change", () => { state.ember.colors[0] = $("emberC1").value; saveState(); });
-      $("emberC2").addEventListener("change", () => { state.ember.colors[1] = $("emberC2").value; saveState(); });
-      $("emberC3").addEventListener("change", () => { state.ember.colors[2] = $("emberC3").value; saveState(); });
-
-      // export/import
-      $("btnExport").addEventListener("click", () => {
-        $("jsonBox").value = JSON.stringify(state, null, 2);
-      });
-      $("btnImport").addEventListener("click", () => {
-        try{
-          const parsed = JSON.parse($("jsonBox").value || "{}");
-          state = deepMerge(structuredClone(DEFAULTS), parsed);
-          saveState();
-          bind();
-        } catch {
-          alert("Invalid JSON");
-        }
-      });
-      $("btnFactory").addEventListener("click", () => {
-        state = structuredClone(DEFAULTS);
-        saveState();
-        bind();
+  function spawnEmbers(count){
+    const w = embersCanvas.width, h = embersCanvas.height;
+    const colors = state.ember.colors || ["#FFA500"];
+    for(let i=0;i<count;i++){
+      embers.push({
+        x: Math.random()*w,
+        y: h + Math.random()*80,
+        r: 1 + Math.random()*2.8,
+        vx: (-0.25 + Math.random()*0.5),
+        vy: -(0.35 + Math.random()*1.1),
+        a: 0.25 + Math.random()*0.8,
+        col: colors[Math.floor(Math.random()*colors.length)]
       });
     }
+  }
 
-    bind();
-    wire();
+  function burstSparks(side){
+    if(!state.effects.sparksOn) return;
+    const w = sparksCanvas.width, h = sparksCanvas.height;
+    const x = side === "win" ? w * 0.18 : w * 0.82;
+    const y = h * 0.50;
+    const baseCol = side === "win" ? state.colors.spinWin : state.colors.spinLose;
+    const amt = clamp(state.effects.sparksAmount, 0, 160);
 
-    window.addEventListener("storage", (e) => {
-      if(e.key !== STORAGE_KEY) return;
-      state = loadState();
-      bind();
+    for(let i=0;i<amt;i++){
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 0.8 + Math.random() * 2.8;
+      sparks.push({
+        x, y,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - (0.8 + Math.random()*0.8),
+        life: 1,
+        r: 1 + Math.random()*2.6,
+        col: baseCol
+      });
+    }
+  }
+
+  function spawnDrip(){
+    const w = bloodCanvas.width;
+    const h = bloodCanvas.height;
+
+    const thickScale = Number(state.effects.bloodThickness ?? 0.7);
+    const lenScale   = Number(state.effects.bloodLength ?? 0.75);
+    const wob        = Number(state.effects.bloodWobble ?? 0.6);
+
+    const thick = 2 + thickScale * 10;
+    const len   = (0.35 + lenScale * 1.25) * h;
+
+    // spawn from top edge (slightly randomized)
+    const x = Math.random() * w;
+
+    drips.push({
+      x,
+      y: -Math.random() * 25,
+      vx: (-0.25 + Math.random() * 0.5) * wob,
+      vy: (0.85 + Math.random() * 1.35),
+      w: thick * (0.6 + Math.random() * 1.0),
+      len: len * (0.25 + Math.random() * 0.70),
+      phase: Math.random() * Math.PI * 2,
+      life: 1
     });
-  </script>
+  }
+
+  function drawDrip(d){
+    const col = state.effects.bloodColor || "#8b0000";
+    const op  = Math.max(0, Math.min(1, Number(state.effects.bloodOpacity ?? 0.85)));
+
+    bctx.save();
+    bctx.globalAlpha = op * d.life;
+
+    // trail
+    bctx.beginPath();
+    bctx.lineCap = "round";
+    bctx.lineWidth = d.w;
+    bctx.strokeStyle = col;
+    bctx.moveTo(d.x, d.y);
+    bctx.lineTo(d.x, d.y + d.len);
+    bctx.stroke();
+
+    // bulb at end
+    bctx.beginPath();
+    bctx.fillStyle = col;
+    bctx.arc(d.x, d.y + d.len, d.w * 0.65, 0, Math.PI * 2);
+    bctx.fill();
+
+    // wet highlight
+    bctx.globalAlpha = op * d.life * 0.16;
+    bctx.strokeStyle = "rgba(255,255,255,.35)";
+    bctx.lineWidth = Math.max(1, d.w * 0.22);
+    bctx.beginPath();
+    bctx.moveTo(d.x - d.w * 0.22, d.y + d.w);
+    bctx.lineTo(d.x - d.w * 0.22, d.y + d.len * 0.55);
+    bctx.stroke();
+
+    bctx.restore();
+  }
+
+  function step(t){
+    const dt = Math.min(40, t - lastT);
+    lastT = t;
+
+    // embers
+    if(state.ember.enabled){
+      const speed = Math.max(0.05, state.ember.speed || 0.6);
+      const w = embersCanvas.width, h = embersCanvas.height;
+      ectx.clearRect(0,0,w,h);
+
+      const target = Math.max(0, state.ember.targetCount || 70);
+      if(embers.length < target) spawnEmbers(Math.min(12, target - embers.length));
+
+      for(const p of embers){
+        p.x += p.vx * dt * speed;
+        p.y += p.vy * dt * speed;
+        p.a -= 0.00075 * dt;
+
+        ectx.beginPath();
+        ectx.fillStyle = hexToRgba(p.col, Math.max(0, Math.min(1, p.a)));
+        ectx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ectx.fill();
+      }
+      embers = embers.filter(p => p.a > 0 && p.y > -60 && p.x > -60 && p.x < w+60);
+    } else {
+      ectx.clearRect(0,0,embersCanvas.width,embersCanvas.height);
+      embers.length = 0;
+    }
+
+    // sparks
+    sctx.clearRect(0,0,sparksCanvas.width,sparksCanvas.height);
+    for(const p of sparks){
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.05; p.vx *= 0.985;
+      p.life -= 0.022;
+
+      sctx.beginPath();
+      sctx.fillStyle = hexToRgba(p.col, Math.max(0, p.life));
+      sctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      sctx.fill();
+    }
+    sparks = sparks.filter(p => p.life > 0);
+
+    // blood
+    bctx.clearRect(0,0,bloodCanvas.width,bloodCanvas.height);
+
+    if(state.effects.bloodOn){
+      const rate = Math.max(0, Number(state.effects.bloodRate ?? 0.55)); // drips/sec
+      const speedMul = Math.max(0.1, Number(state.effects.bloodSpeed ?? 1.05));
+      const wob = Number(state.effects.bloodWobble ?? 0.6);
+
+      bloodSpawnAcc += (dt / 1000) * rate;
+      while(bloodSpawnAcc >= 1){
+        spawnDrip();
+        bloodSpawnAcc -= 1;
+      }
+
+      const h = bloodCanvas.height;
+
+      for(const d of drips){
+        d.phase += 0.02 * dt;
+
+        d.x += d.vx * dt * 0.02;
+        d.x += Math.sin(d.phase) * wob * 0.06 * dt;
+
+        d.y += d.vy * dt * 0.06 * speedMul;
+
+        if(d.y > h * 0.55) d.life -= 0.0025 * dt;
+
+        drawDrip(d);
+      }
+
+      drips = drips.filter(d => d.life > 0 && d.y < h + d.len + 90);
+    } else {
+      drips.length = 0;
+      bloodSpawnAcc = 0;
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  function applyAll(){
+    setCSSVars();
+    render();
+    resizeCanvases();
+    applyVisibilityOnLoad();
+  }
+
+  // reliable sync: storage event + polling
+  window.addEventListener("storage", (e) => {
+    if(e.key !== STORAGE_KEY) return;
+    state = loadState();
+    applyAll();
+  });
+
+  let lastRaw = localStorage.getItem(STORAGE_KEY);
+  setInterval(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw === lastRaw) return;
+    lastRaw = raw;
+    state = loadState();
+    applyAll();
+  }, 200);
+
+  applyAll();
+  requestAnimationFrame(step);
+
+  // Chat commands
+  const client = new tmi.Client({ connection:{ secure:true, reconnect:true }, channels:[ state.channel ] });
+  client.connect().catch(()=>{});
+
+  function isAllowed(userstate){
+    if(state.allowEveryone) return true;
+    const b = userstate.badges || {};
+    return !!b.broadcaster || !!b.moderator;
+  }
+
+  function bumpWin(n=1){
+    state.scoreWin = clamp(state.scoreWin + n, 0, 99);
+    saveState(); render();
+    pop(winNumEl); flashGlow("win"); doShake(); burstSparks("win");
+    if(state.visibility === "command") showWidgetFor(state.showSeconds);
+  }
+  function bumpLose(n=1){
+    state.scoreLose = clamp(state.scoreLose + n, 0, 99);
+    saveState(); render();
+    pop(loseNumEl); flashGlow("lose"); doShake(); burstSparks("lose");
+    if(state.visibility === "command") showWidgetFor(state.showSeconds);
+  }
+  function reset(){
+    state.scoreWin = 0; state.scoreLose = 0;
+    saveState(); render();
+    pop(winNumEl); pop(loseNumEl); doShake();
+    if(state.visibility === "command") showWidgetFor(state.showSeconds);
+  }
+
+  client.on("message", (_chan, userstate, message, self) => {
+    if(self) return;
+    const msg = (message||"").trim().toLowerCase();
+    if(!msg.startsWith("!")) return;
+    if(!isAllowed(userstate)) return;
+
+    if(msg === "!dbdwin") bumpWin(1);
+    if(msg === "!dbdlose") bumpLose(1);
+    if(msg === "!dbdreset") reset();
+
+    if(msg.startsWith("!dbdset")){
+      const parts = msg.split(/\s+/);
+      const a = parseInt(parts[1],10);
+      const b = parseInt(parts[2],10);
+      if(Number.isFinite(a)) state.scoreWin = clamp(a,0,99);
+      if(Number.isFinite(b)) state.scoreLose = clamp(b,0,99);
+      saveState(); render(); pop(winNumEl); pop(loseNumEl); doShake();
+      if(state.visibility === "command") showWidgetFor(state.showSeconds);
+    }
+  });
+</script>
 </body>
 </html>
